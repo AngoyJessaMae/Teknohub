@@ -31,13 +31,6 @@
 
 7. Open `.env` and update the database config:
    ```
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=teknohub
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
 
 8. Run the migrations:
    ```bash
