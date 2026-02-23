@@ -1,0 +1,127 @@
+/* TeknoHub Custom Styles */
+
+/* Override Bootstrap variables for dark theme */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --dark-bg: #1f2937;
+    --dark-card: #374151;
+    --text-light: #f9fafb;
+    --text-muted: #9ca3af;
+}
+
+/* Custom button styles */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Sidebar styling */
+.sidebar {
+    background-color: var(--dark-bg);
+    min-height: 100vh;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: var(--text-light);
+    background-color: rgba(37, 99, 235, 0.1);
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Card styling for dark theme */
+.card {
+    background-color: var(--dark-card);
+    border: 1px solid #4b5563;
+    color: var(--text-light);
+}
+
+.card-header {
+    background-color: rgba(0,0,0,0.1);
+    border-bottom: 1px solid #4b5563;
+}
+
+/* Form styling for dark theme */
+.form-control,
+.form-select {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    color: var(--text-light);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #374151;
+    border-color: var(--primary-color);
+    color: var(--text-light);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Table styling for dark theme */
+.table-dark {
+    --bs-table-bg: var(--dark-card);
+    --bs-table-border-color: #4b5563;
+}
+
+/* Status badges */
+.badge.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+.badge.bg-success {
+    background-color: #10b981 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.badge.bg-info {
+    background-color: #3b82f6 !important;
+}
+
+/* Custom animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .btn,
+    .navbar {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+}
