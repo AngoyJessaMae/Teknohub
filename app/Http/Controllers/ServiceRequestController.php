@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\ServiceRequest;
 use App\Models\Customer;
+use App\Models\User;
 use App\Models\Employee;
 use App\Models\Queue;
 use App\Models\Billing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 
 class ServiceRequestController extends Controller
@@ -17,12 +19,12 @@ class ServiceRequestController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'customer') {
+        if ($user->role === 'Customer') {
             $requests = ServiceRequest::where('customer_id', $user->customer->customer_id)
                 ->with(['employee.user', 'billing'])
                 ->latest()
                 ->get();
-        } elseif ($user->role === 'employee') {
+        } elseif ($user->role === 'Employee') {
             $requests = ServiceRequest::where('employee_id', $user->employee->employee_id)
                 ->with(['customer.user', 'billing'])
                 ->latest()
@@ -38,24 +40,80 @@ class ServiceRequestController extends Controller
 
     public function create()
     {
-        return view('service_requests.create');
+        $user = Auth::user();
+        $customers = [];
+        $staff = [];
+        
+        // check for Employee role 
+        if ($user->role === 'Employee') {
+            // employees can create requests for any customer
+            $customers = Customer::with('user')->get();
+            // fetch all employees for assignment
+            $staff = Employee::with('user')->get();
+        }
+        
+        return view('service_requests.create', compact('customers', 'staff'));
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        
+        // check required fields
         $validated = $request->validate([
-            'device_type' => 'required|string|max:100',
-            'device_description' => 'required|string',
+            'device_type' => 'required',
+            'device_description' => 'required',
         ]);
 
+        // Handle customer based on user role
+        if ($user->role === 'Employee') {
+            $customerType = $request->input('customer_type', 'existing');
+            
+            if ($customerType === 'existing') {
+                $customerId = $request->input('customer_id');
+                if (!$customerId) {
+                    return back()->with('error', 'Please select a customer');
+                }
+            } else {
+                // create new customer
+                $newUser = User::create([
+                    'full_name' => $request->input('new_customer_name'),
+                    'email' => $request->input('new_customer_email'),
+                    'contact_number' => $request->input('new_customer_contact'),
+                    'password' => Hash::make('customer123'),
+                    'role' => 'Customer',
+                    'account_status' => 'Active',
+                ]);
+                
+                $newCustomer = Customer::create([
+                    'user_id' => $newUser->user_id,
+                ]);
+                
+                $customerId = $newCustomer->customer_id;
+            }
+            
+            // assign staff
+            $employeeId = $request->input('staff_id');
+            if (!$employeeId) {
+                $employeeId = $user->employee->employee_id;
+            }
+        } else {
+            // customer creating their own request
+            $customerId = $user->customer->customer_id;
+            $employeeId = null;
+        }
+
+        // Create service request
         $serviceRequest = ServiceRequest::create([
-            'customer_id' => Auth::user()->customer->customer_id,
-            'device_type' => $validated['device_type'],
-            'device_description' => $validated['device_description'],
+            'customer_id' => $customerId,
+            'employee_id' => $employeeId,
+            'device_type' => $request->device_type,
+            'device_description' => $request->device_description,
             'date_created' => Carbon::now(),
             'status' => 'pending',
         ]);
 
+        // Create queue entry
         $nextPosition = Queue::where('status', 'waiting')->count() + 1;
 
         Queue::create([
@@ -64,6 +122,7 @@ class ServiceRequestController extends Controller
             'status' => 'waiting',
         ]);
 
+        // Create billing entry
         Billing::create([
             'service_id' => $serviceRequest->service_id,
             'labor_fee' => 0,

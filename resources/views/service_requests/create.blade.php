@@ -12,8 +12,105 @@
                 </h5>
             </div>
             <div class="card-body">
+                <!-- validation errors -->
+                @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 <form method="POST" action="{{ route('service-requests.store') }}">
                     @csrf
+
+                    @auth
+                        @if(Auth::user()->role === 'Employee')
+                        <!-- select customer type -->
+                        <div class="mb-4">
+                            <label class="form-label">Customer Type</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input customer-type" type="radio" name="customer_type" id="customer_existing" value="existing" {{ old('customer_type', 'existing') === 'existing' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="customer_existing">
+                                        Existing Customer
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input customer-type" type="radio" name="customer_type" id="customer_new" value="new" {{ old('customer_type') === 'new' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="customer_new">
+                                        New Customer
+                                    </label>
+                                </div>
+                            </div>
+                            @error('customer_type')
+                            <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- if customer exists -->
+                        <div id="existing_customer_section" class="mb-3">
+                            <label for="customer_id" class="form-label">Select Customer</label>
+                            <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id" name="customer_id">
+                                <option value="">Select a Customer</option>
+                                @forelse($customers as $customer)
+                                    <option value="{{ $customer->customer_id }}" {{ old('customer_id') == $customer->customer_id ? 'selected' : '' }}>
+                                        {{ $customer->user->full_name ?? 'Unknown' }} ({{ $customer->user->email ?? 'No email' }})
+                                    </option>
+                                @empty
+                                    <option value="">No customers found</option>
+                                @endforelse
+                            </select>
+                            @error('customer_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- for new customer -->
+                        <div id="new_customer_section" class="mb-3 p-3 border rounded bg-light" style="display: none;">
+                            <h6 class="mb-3">New Customer Information</h6>
+                            <div class="mb-3">
+                                <label for="new_customer_name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control @error('new_customer_name') is-invalid @enderror" id="new_customer_name" name="new_customer_name" value="{{ old('new_customer_name') }}">
+                                @error('new_customer_name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_customer_email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control @error('new_customer_email') is-invalid @enderror" id="new_customer_email" name="new_customer_email" value="{{ old('new_customer_email') }}">
+                                @error('new_customer_email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_customer_contact" class="form-label">Contact Number</label>
+                                <input type="text" class="form-control @error('new_customer_contact') is-invalid @enderror" id="new_customer_contact" name="new_customer_contact" value="{{ old('new_customer_contact') }}">
+                                @error('new_customer_contact')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- assign staff to service -->
+                        <div class="mb-3">
+                            <label for="staff_id" class="form-label">Assign to Staff</label>
+                            <select class="form-select" id="staff_id" name="staff_id">
+                                <option value="">Select Staff (Optional - defaults to you)</option>
+                                @forelse($staff as $employee)
+                                    <option value="{{ $employee->employee_id }}" {{ old('staff_id') == $employee->employee_id ? 'selected' : '' }}>
+                                        {{ $employee->user->full_name ?? 'Unknown' }} - {{ $employee->job_title ?? 'Staff' }}
+                                    </option>
+                                @empty
+                                    <option value="">No staff available</option>
+                                @endforelse
+                            </select>
+                            <small class="text-muted">Leave blank to assign to yourself</small>
+                        </div>
+                        @endif
+                    @endauth
 
                     <div class="mb-3">
                         <label for="device_type" class="form-label">Device Type</label>
@@ -86,4 +183,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var radios = document.querySelectorAll('.customer-type');
+        var existingSection = document.getElementById('existing_customer_section');
+        var newSection = document.getElementById('new_customer_section');
+        
+        function toggleSections() {
+            var checked = document.querySelector('.customer-type:checked');
+            if (checked && checked.value === 'existing') {
+                existingSection.style.display = 'block';
+                newSection.style.display = 'none';
+            } else if (checked && checked.value === 'new') {
+                existingSection.style.display = 'none';
+                newSection.style.display = 'block';
+            }
+        }
+        
+        radios.forEach(function(radio) {
+            radio.addEventListener('change', toggleSections);
+        });
+        
+        toggleSections();
+    });
+</script>
 @endsection

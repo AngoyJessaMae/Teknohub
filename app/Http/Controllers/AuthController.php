@@ -35,6 +35,12 @@ class AuthController extends Controller
 
     public function showRegisterForm()
     {
+        if (Auth::check()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+        }
+        
         return view('auth.register');
     }
 
@@ -45,6 +51,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'contact_number' => 'required|string|max:20',
             'password' => 'required|min:8|confirmed',
+            'role' => 'required|in:Customer,Employee',
         ]);
 
         $user = User::create([
@@ -52,13 +59,22 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'contact_number' => $validated['contact_number'],
             'password' => Hash::make($validated['password']),
-            'role' => 'Customer',
+            'role' => $validated['role'],
             'account_status' => 'Active',
         ]);
 
-        Customer::create([
-            'user_id' => $user->user_id,
-        ]);
+        // create acc based on role
+        if ($validated['role'] === 'Customer') {
+            Customer::create([
+                'user_id' => $user->user_id,
+            ]);
+        } elseif ($validated['role'] === 'Employee') {
+            Employee::create([
+                'user_id' => $user->user_id,
+                'department_name' => $request->department_name ?? null,
+                'job_title' => $request->job_title ?? null,
+            ]);
+        }
 
         Auth::login($user);
 
