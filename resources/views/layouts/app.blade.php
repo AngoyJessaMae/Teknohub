@@ -15,24 +15,40 @@
 
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --dark-bg: #1f2937;
-            --dark-card: #374151;
-            --text-light: #f9fafb;
-            --text-muted: #9ca3af;
+            --primary-color: #EC4E20;      /* Vibrant Orange */
+            --secondary-color: #7b4884;    /* Grape Soda */
+            --bg-main: #fafaff;            /* Ghost White */
+            --card-bg: #ffffff;            /* Clean white cards */
+            --text-main: #140f2d;          /* Midnight Violet */
+            --text-muted: #140f2d;         /* Midnight Violet */
+            --border-light: #e5e7eb;
+            /* Overriding default Bootstrap colors */
+            --bs-body-color: #140f2d;
+            --bs-body-color-rgb: 20, 15, 45;
+            --bs-primary: #EC4E20;
+            --bs-primary-rgb: 236, 78, 32;
+            --bs-secondary: #D300F8;        /* Neon Purple */ 
+            --bs-secondary-rgb: 211, 0, 248;
+            --bs-card-cap-bg: #ffffff;
+
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--text-light);
+            background-color: var(--bg-main);
+            color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* Text Main fix (it was losing opacity) */
+        .text-main {
+            color: var(--text-main) !important;
+        }
+
+        /* Sidebar */
         .sidebar {
-            background-color: var(--dark-card);
+            background-color: #ffffff;
             min-height: 100vh;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 2px 0 10px rgba(20, 15, 45, 0.08);
         }
 
         .sidebar .nav-link {
@@ -45,21 +61,28 @@
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
             background-color: var(--primary-color);
-            color: white;
+            color: #ffffff;
         }
 
+        /* Main Content */
         .main-content {
-            background-color: var(--dark-bg);
+            background-color: var(--bg-main);
             min-height: 100vh;
         }
 
+        /* Cards */
         .card {
-            background-color: var(--dark-card);
-            border: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-light);
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 6px rgba(20, 15, 45, 0.05);
         }
 
+        .card-header {
+            background-color: #ffffff;
+        }
+
+        /* Buttons */
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
@@ -70,35 +93,61 @@
             border-color: var(--secondary-color);
         }
 
-        .table-dark {
-            --bs-table-bg: var(--dark-card);
-            --bs-table-border-color: #4b5563;
+        .btn-outline-secondary {
+            color: #D300F8;
+            border-color: #D300F8;
         }
 
+        .btn-outline-secondary:hover {
+            background-color: #D300F8;
+            border-color: #D300F8;
+            color: #ffffff;
+        }
+
+        /* Tables */
+        .table {
+            --bs-table-bg: #ffffff;
+            --bs-table-border-color: var(--border-light);
+            color: var(--text-main);
+        }
+
+        .table thead {
+            background-color: #fafaff;
+        }
+
+        /* Forms */
         .form-control,
         .form-select {
-            background-color: var(--dark-card);
-            border: 1px solid #4b5563;
-            color: var(--text-light);
+            background-color: #ffffff;
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
         }
 
         .form-control:focus,
         .form-select:focus {
-            background-color: var(--dark-card);
+            background-color: #ffffff;
             border-color: var(--primary-color);
-            color: var(--text-light);
-            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+            color: var(--text-main);
+            box-shadow: 0 0 0 0.25rem rgba(236, 78, 32, 0.25);
         }
 
+        /* Navbar */
         .navbar-brand {
             color: var(--primary-color) !important;
             font-weight: bold;
             font-size: 1.5rem;
         }
 
+        /* Badge */
         .badge {
             font-size: 0.75rem;
             padding: 0.5em 0.75em;
+            background-color: var(--secondary-color);
+            color: #ffffff;
+        }
+
+        .sidebar .logout-link:hover {
+            color: #D300F8;
         }
     </style>
 </head>
@@ -146,7 +195,7 @@
 
                         <form method="POST" action="{{ route('logout') }}" class="d-inline">
                             @csrf
-                            <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">
+                            <button type="submit" class="nav-link logout-link border-0 bg-transparent w-100 text-start">
                                 <i class="fas fa-sign-out-alt me-2"></i>Logout
                             </button>
                         </form>
@@ -156,7 +205,7 @@
                         <div class="text-center text-muted">
                             <small>Logged in as:</small><br>
                             <strong>{{ auth()->user()->full_name }}</strong><br>
-                            <span class="badge bg-primary">{{ ucfirst(auth()->user()->role) }}</span>
+                            <span class="badge bg-secondary">{{ ucfirst(auth()->user()->role) }}</span>
                         </div>
                     </div>
                 </div>

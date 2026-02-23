@@ -8,7 +8,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-tasks fa-2x text-primary mb-2"></i>
-                <h3 class="card-title">{{ count($assignedRepairs) }}</h3>
+                <h3 class="card-title text-main">{{ count($assignedRepairs) }}</h3>
                 <p class="card-text text-muted">Assigned Repairs</p>
             </div>
         </div>
@@ -17,7 +17,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-cogs fa-2x text-warning mb-2"></i>
-                <h3 class="card-title">{{ $activeRepairs }}</h3>
+                <h3 class="card-title text-main">{{ $activeRepairs }}</h3>
                 <p class="card-text text-muted">Active Repairs</p>
             </div>
         </div>
@@ -26,7 +26,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <h3 class="card-title">{{ $completedRepairsByEmployee }}</h3>
+                <h3 class="card-title text-main">{{ $completedRepairsByEmployee }}</h3>
                 <p class="card-text text-muted">Completed Repairs</p>
             </div>
         </div>
@@ -35,7 +35,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-users fa-2x text-info mb-2"></i>
-                <h3 class="card-title">{{ $managedCustomersCount }}</h3>
+                <h3 class="card-title text-main">{{ $managedCustomersCount }}</h3>
                 <p class="card-text text-muted">Managed Customers</p>
             </div>
         </div>
@@ -45,17 +45,17 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header text-main d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="fas fa-tasks me-2"></i>My Assigned Requests
                 </h5>
-                <a href="{{ route('queue.index') }}" class="btn btn-outline-info btn-sm">
+                <a href="{{ route('queue.index') }}" class="btn btn-outline-secondary btn-sm">
                     View Queue
                 </a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>ID</th>

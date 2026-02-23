@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-wrench me-2"></i>Service Request #{{ $serviceRequest->service_id }}
                 </h5>
@@ -21,7 +21,7 @@
                     @endif
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body text-main">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <h6>Customer Information</h6>
@@ -128,7 +128,7 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card">
+        <div class="card text-main">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-dollar-sign me-2"></i>Billing Information
@@ -178,7 +178,7 @@
         </div>
 
         @if($serviceRequest->queue)
-        <div class="card mt-3">
+        <div class="card mt-3 text-main">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-list-ol me-2"></i>Queue Information

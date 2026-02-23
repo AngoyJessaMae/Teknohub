@@ -18,7 +18,7 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label for="full_name" class="form-label">Full Name</label>
+                        <label for="full_name" class="form-label text-main">Full Name</label>
                         <input type="text" class="form-control @error('full_name') is-invalid @enderror"
                             id="full_name" name="full_name" value="{{ old('full_name') }}" required>
                         @error('full_name')
@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label text-main">Email Address</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror"
                             id="email" name="email" value="{{ old('email') }}" required>
                         @error('email')
@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="contact_number" class="form-label">Contact Number</label>
+                        <label for="contact_number" class="form-label text-main">Contact Number</label>
                         <input type="text" class="form-control @error('contact_number') is-invalid @enderror"
                             id="contact_number" name="contact_number" value="{{ old('contact_number') }}" required>
                         @error('contact_number')
@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
+                        <label for="password" class="form-label text-main">Password</label>
                         <input type="password" class="form-control @error('password') is-invalid @enderror"
                             id="password" name="password" required>
                         @error('password')
@@ -54,13 +54,13 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="password_confirmation" class="form-label">Confirm Password</label>
+                        <label for="password_confirmation" class="form-label text-main">Confirm Password</label>
                         <input type="password" class="form-control"
                             id="password_confirmation" name="password_confirmation" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="role" class="form-label">Register as</label>
+                        <label for="role" class="form-label text-main">Register as</label>
                         <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
                             <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer</option>
                             <option value="Employee" {{ old('role') == 'Employee' ? 'selected' : '' }}>Employee</option>
@@ -72,7 +72,7 @@
 
                     <div id="employee_fields" style="display: none;">
                         <div class="mb-3">
-                            <label for="department_name" class="form-label">Department</label>
+                            <label for="department_name" class="form-label text-main">Department</label>
                             <input type="text" class="form-control @error('department_name') is-invalid @enderror"
                                 id="department_name" name="department_name" value="{{ old('department_name') }}">
                             @error('department_name')
@@ -80,7 +80,7 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="job_title" class="form-label">Job Title</label>
+                            <label for="job_title" class="form-label text-main">Job Title</label>
                             <input type="text" class="form-control @error('job_title') is-invalid @enderror"
                                 id="job_title" name="job_title" value="{{ old('job_title') }}">
                             @error('job_title')
@@ -100,7 +100,7 @@
 
                 <div class="text-center">
                     <p class="text-muted mb-0">Already have an account?</p>
-                    <a href="{{ route('login') }}" class="text-primary text-decoration-none">
+                    <a href="{{ route('login') }}" class="text-secondary text-decoration-none">
                         Login Here
                     </a>
                 </div>

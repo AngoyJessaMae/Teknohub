@@ -5,7 +5,7 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-md-6">
-        <h2><i class="fas fa-file-invoice-dollar me-2"></i>Billing Management</h2>
+        <h2><i class="fas fa-file-invoice-dollar me-2 text-main"></i>Billing Management</h2>
     </div>
     <div class="col-md-6 text-end">
         <div class="btn-group">
@@ -18,9 +18,9 @@
 </div>
 
 <div class="card">
-    <div class="card-body">
+    <div class="card-body text-main">
         <div class="table-responsive">
-            <table class="table table-dark table-striped" id="billingTable">
+            <table class="table table-striped" id="billingTable">
                 <thead>
                     <tr>
                         <th>ID</th>

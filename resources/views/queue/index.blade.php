@@ -29,7 +29,7 @@
                     {{ ucfirst(str_replace('_', ' ', $queue->status)) }}
                 </span>
             </div>
-            <div class="card-body">
+            <div class="card-body text-main">
                 <h6 class="card-title">Service Request #{{ $queue->serviceRequest->service_id }}</h6>
                 <p class="card-text">
                     <strong>Customer:</strong> {{ $queue->serviceRequest->customer->user->full_name }}<br>
@@ -67,7 +67,7 @@
 @if($queues->count() > 0)
 <div class="row mt-4">
     <div class="col-12">
-        <div class="card">
+        <div class="card text-main">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-chart-bar me-2"></i>Queue Statistics

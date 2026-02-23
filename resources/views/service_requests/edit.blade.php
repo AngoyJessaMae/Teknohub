@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header text-main d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="fas fa-edit me-2"></i>Edit Service Request #{{ $serviceRequest->service_id }}
                 </h5>
@@ -21,7 +21,7 @@
 
                     @if(auth()->user()->role === 'admin')
                     <div class="mb-3">
-                        <label for="employee_id" class="form-label">Assign Employee</label>
+                        <label for="employee_id" class="form-label text-main">Assign Employee</label>
                         <select class="form-select @error('employee_id') is-invalid @enderror" id="employee_id" name="employee_id">
                             <option value="">Unassigned</option>
                             @foreach($employees as $employee)
@@ -38,7 +38,7 @@
                     @endif
 
                     <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
+                        <label for="status" class="form-label text-main">Status</label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                             <option value="pending" {{ old('status', $serviceRequest->status) === 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="in_progress" {{ old('status', $serviceRequest->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
@@ -76,7 +76,7 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card">
+        <div class="card text-main">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-info-circle me-2"></i>Request Details
@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <div class="card mt-3">
+        <div class="card mt-3 text-main">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-lightbulb me-2"></i>Status Guidelines

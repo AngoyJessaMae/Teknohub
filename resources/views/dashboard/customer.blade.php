@@ -8,7 +8,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-wrench fa-2x text-primary mb-2"></i>
-                <h3 class="card-title">{{ $totalRequests }}</h3>
+                <h3 class="card-title text-main">{{ $totalRequests }}</h3>
                 <p class="card-text text-muted">Total Requests</p>
             </div>
         </div>
@@ -17,7 +17,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                <h3 class="card-title">{{ $pendingRepairs }}</h3>
+                <h3 class="card-title text-main">{{ $pendingRepairs }}</h3>
                 <p class="card-text text-muted">Pending Repairs</p>
             </div>
         </div>
@@ -26,7 +26,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <h3 class="card-title">{{ $completedRepairs }}</h3>
+                <h3 class="card-title text-main">{{ $completedRepairs }}</h3>
                 <p class="card-text text-muted">Completed Repairs</p>
             </div>
         </div>
@@ -35,7 +35,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-plus fa-2x text-info mb-2"></i>
-                <h3 class="card-title">New</h3>
+                <h3 class="card-title text-main">New</h3>
                 <p class="card-text text-muted">Service Request</p>
             </div>
         </div>
@@ -45,7 +45,7 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header text-main d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="fas fa-history me-2"></i>My Service Requests
                 </h5>
@@ -55,7 +55,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>ID</th>

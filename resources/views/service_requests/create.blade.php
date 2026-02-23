@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-plus me-2"></i>Create New Service Request
                 </h5>
@@ -30,15 +30,15 @@
                         @if(Auth::user()->role === 'Employee')
                         <!-- select customer type -->
                         <div class="mb-4">
-                            <label class="form-label">Customer Type</label>
+                            <label class="form-label text-main">Customer Type</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input customer-type" type="radio" name="customer_type" id="customer_existing" value="existing" {{ old('customer_type', 'existing') === 'existing' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="customer_existing">
+                                    <label class="form-check-label text-main" for="customer_existing">
                                         Existing Customer
                                     </label>
                                 </div>
-                                <div class="form-check">
+                                <div class="form-check text-main">
                                     <input class="form-check-input customer-type" type="radio" name="customer_type" id="customer_new" value="new" {{ old('customer_type') === 'new' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="customer_new">
                                         New Customer
@@ -52,7 +52,7 @@
 
                         <!-- if customer exists -->
                         <div id="existing_customer_section" class="mb-3">
-                            <label for="customer_id" class="form-label">Select Customer</label>
+                            <label for="customer_id" class="form-label text-main">Select Customer</label>
                             <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id" name="customer_id">
                                 <option value="">Select a Customer</option>
                                 @forelse($customers as $customer)
@@ -70,23 +70,23 @@
 
                         <!-- for new customer -->
                         <div id="new_customer_section" class="mb-3 p-3 border rounded bg-light" style="display: none;">
-                            <h6 class="mb-3">New Customer Information</h6>
+                            <h6 class="mb-3 text-main">New Customer Information</h6>
                             <div class="mb-3">
-                                <label for="new_customer_name" class="form-label">Full Name</label>
+                                <label for="new_customer_name" class="form-label text-main">Full Name</label>
                                 <input type="text" class="form-control @error('new_customer_name') is-invalid @enderror" id="new_customer_name" name="new_customer_name" value="{{ old('new_customer_name') }}">
                                 @error('new_customer_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="new_customer_email" class="form-label">Email Address</label>
+                                <label for="new_customer_email" class="form-label text-main">Email Address</label>
                                 <input type="email" class="form-control @error('new_customer_email') is-invalid @enderror" id="new_customer_email" name="new_customer_email" value="{{ old('new_customer_email') }}">
                                 @error('new_customer_email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="new_customer_contact" class="form-label">Contact Number</label>
+                                <label for="new_customer_contact" class="form-label text-main">Contact Number</label>
                                 <input type="text" class="form-control @error('new_customer_contact') is-invalid @enderror" id="new_customer_contact" name="new_customer_contact" value="{{ old('new_customer_contact') }}">
                                 @error('new_customer_contact')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -96,7 +96,7 @@
 
                         <!-- assign staff to service -->
                         <div class="mb-3">
-                            <label for="staff_id" class="form-label">Assign to Staff</label>
+                            <label for="staff_id" class="form-label text-main">Assign to Staff</label>
                             <select class="form-select" id="staff_id" name="staff_id">
                                 <option value="">Select Staff (Optional - defaults to you)</option>
                                 @forelse($staff as $employee)
@@ -113,7 +113,7 @@
                     @endauth
 
                     <div class="mb-3">
-                        <label for="device_type" class="form-label">Device Type</label>
+                        <label for="device_type" class="form-label text-main">Device Type</label>
                         <select class="form-select @error('device_type') is-invalid @enderror" id="device_type" name="device_type" required>
                             <option value="">Select Device Type</option>
                             <option value="Laptop" {{ old('device_type') === 'Laptop' ? 'selected' : '' }}>Laptop</option>
@@ -130,7 +130,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="device_description" class="form-label">Device Description</label>
+                        <label for="device_description" class="form-label text-main">Device Description</label>
                         <textarea class="form-control @error('device_description') is-invalid @enderror"
                             id="device_description" name="device_description" rows="4"
                             placeholder="Please describe the issue with your device..." required>{{ old('device_description') }}</textarea>
@@ -154,12 +154,12 @@
 
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-info-circle me-2"></i>Request Guidelines
                 </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body text-main">
                 <h6>Device Information</h6>
                 <p class="text-muted small">Please provide as much detail as possible about your device and the issues you're experiencing.</p>
 
