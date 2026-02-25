@@ -98,12 +98,12 @@ class ServiceRequestController extends Controller
                 $employeeId = $user->employee->employee_id;
             }
         } else {
-            // customer creating their own request
+            // customer create own request
             $customerId = $user->customer->customer_id;
             $employeeId = null;
         }
 
-        // Create service request
+        // Create sr
         $serviceRequest = ServiceRequest::create([
             'customer_id' => $customerId,
             'employee_id' => $employeeId,
@@ -113,22 +113,13 @@ class ServiceRequestController extends Controller
             'status' => 'pending',
         ]);
 
-        // Create queue entry
+        // create queue entry
         $nextPosition = Queue::where('status', 'waiting')->count() + 1;
 
         Queue::create([
             'service_id' => $serviceRequest->service_id,
             'queue_position' => $nextPosition,
             'status' => 'waiting',
-        ]);
-
-        // Create billing entry
-        Billing::create([
-            'service_id' => $serviceRequest->service_id,
-            'labor_fee' => 0,
-            'parts_fee' => 0,
-            'total_amount' => 0,
-            'payment_status' => 'pending',
         ]);
 
         return redirect()->route('service-requests.index')
@@ -157,11 +148,32 @@ class ServiceRequestController extends Controller
             'date_completed' => 'nullable|date',
         ]);
 
+        // If status is changing to cancelled, delete the billing
+        if ($validated['status'] === 'cancelled' && $serviceRequest->status !== 'cancelled') {
+            if ($serviceRequest->billing) {
+                $serviceRequest->billing->delete();
+            }
+            if ($serviceRequest->queue) {
+                $serviceRequest->queue->delete();
+            }
+        }
+
         $serviceRequest->update($validated);
 
         if ($validated['status'] === 'in_progress' && $serviceRequest->queue) {
             $serviceRequest->queue->update(['status' => 'in_progress']);
         } elseif ($validated['status'] === 'completed') {
+            // Create billing if it doesn't exist
+            if (!$serviceRequest->billing) {
+                Billing::create([
+                    'service_id' => $serviceRequest->service_id,
+                    'labor_fee' => 0,
+                    'parts_fee' => 0,
+                    'total_amount' => 0,
+                    'payment_status' => 'pending',
+                ]);
+            }
+            
             if ($serviceRequest->queue) {
                 $serviceRequest->queue->update(['status' => 'completed']);
             }
@@ -192,6 +204,16 @@ class ServiceRequestController extends Controller
 
     public function destroy(ServiceRequest $serviceRequest)
     {
+        // Delete billing if exists
+        if ($serviceRequest->billing) {
+            $serviceRequest->billing->delete();
+        }
+        
+        // delete queue if exists
+        if ($serviceRequest->queue) {
+            $serviceRequest->queue->delete();
+        }
+        
         $serviceRequest->delete();
 
         return redirect()->route('service-requests.index')

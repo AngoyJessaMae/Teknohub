@@ -15,12 +15,15 @@ class Billing extends Model
         'parts_fee',
         'total_amount',
         'payment_status',
+        'payment_mode',
+        'payment_date',
     ];
 
     protected $casts = [
         'labor_fee' => 'decimal:2',
         'parts_fee' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'payment_date' => 'date',
     ];
 
     public function serviceRequest(): BelongsTo

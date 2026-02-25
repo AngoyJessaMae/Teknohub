@@ -90,8 +90,8 @@
                                 <td>{{ $purchase->item->item_name }}</td>
                                 <td>{{ $purchase->item->category }}</td>
                                 <td>{{ $purchase->quantity }}</td>
-                                <td>${{ number_format($purchase->item->price, 2) }}</td>
-                                <td>${{ number_format($purchase->total_price, 2) }}</td>
+                                <td>₱{{ number_format($purchase->item->price, 2) }}</td>
+                                <td>₱{{ number_format($purchase->total_price, 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -109,7 +109,7 @@
                             <select name="item_id" class="form-select form-select-sm" required>
                                 <option value="">Select Item</option>
                                 @foreach(\App\Models\Item::where('stock_quantity', '>', 0)->get() as $item)
-                                <option value="{{ $item->item_id }}">{{ $item->item_name }} - ${{ $item->price }} ({{ $item->stock_quantity }} in stock)</option>
+                                <option value="{{ $item->item_id }}">{{ $item->item_name }} - ₱{{ $item->price }} ({{ $item->stock_quantity }} in stock)</option>
                                 @endforeach
                             </select>
                         </div>
@@ -128,54 +128,96 @@
     </div>
 
     <div class="col-md-4">
+        @if($serviceRequest->status !== 'cancelled')
         <div class="card text-main">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="fas fa-dollar-sign me-2"></i>Billing Information
+                    <i class="fas fa-peso-sign me-2"></i>Billing Information
                 </h5>
+                @if(auth()->user()->role === 'Employee' || auth()->user()->role === 'admin')
+                <a href="{{ route('service-requests.billing.create', $serviceRequest) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-invoice me-1"></i>Generate Billing
+                </a>
+                @endif
             </div>
             <div class="card-body">
                 @if($serviceRequest->billing)
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
                         <span>Labor Fee:</span>
-                        <strong>${{ number_format($serviceRequest->billing->labor_fee, 2) }}</strong>
+                        <strong>₱{{ number_format($serviceRequest->billing->labor_fee, 2) }}</strong>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>Parts Fee:</span>
-                        <strong>${{ number_format($serviceRequest->billing->parts_fee, 2) }}</strong>
+                        <strong>₱{{ number_format($serviceRequest->billing->parts_fee, 2) }}</strong>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>Total Amount:</span>
-                        <strong>${{ number_format($serviceRequest->billing->total_amount, 2) }}</strong>
+                        <strong>₱{{ number_format($serviceRequest->billing->total_amount, 2) }}</strong>
                     </div>
                 </div>
 
+                @if($serviceRequest->billing->payment_mode)
+                <div class="mb-2">
+                    <strong>Mode of Payment:</strong>
+                    <span>{{ $serviceRequest->billing->payment_mode }}</span>
+                </div>
+                @endif
+
                 <div class="mb-3">
                     <strong>Payment Status:</strong>
-                    <span class="badge bg-{{ $serviceRequest->billing->payment_status === 'paid' ? 'success' : ($serviceRequest->billing->payment_status === 'pending' ? 'warning' : 'danger') }}">
+                    <span class="badge bg-{{ $serviceRequest->billing->payment_status === 'Paid' ? 'success' : ($serviceRequest->billing->payment_status === 'Pending' ? 'warning' : 'danger') }}">
                         {{ ucfirst($serviceRequest->billing->payment_status) }}
                     </span>
                 </div>
 
-                @if(auth()->user()->role === 'admin')
-                <form method="POST" action="{{ route('billing.update-payment-status', $serviceRequest->billing) }}">
-                    @csrf
-                    <div class="mb-3">
-                        <select name="payment_status" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="pending" {{ $serviceRequest->billing->payment_status === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="paid" {{ $serviceRequest->billing->payment_status === 'paid' ? 'selected' : '' }}>Paid</option>
-                            <option value="unpaid" {{ $serviceRequest->billing->payment_status === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
-                        </select>
-                    </div>
-                </form>
+                @if($serviceRequest->billing->payment_date)
+                <div class="mb-3">
+                    <strong>Payment Date:</strong>
+                    <span>{{ \Carbon\Carbon::parse($serviceRequest->billing->payment_date)->format('M d, Y') }}</span>
+                </div>
+                @endif
+
+                @if(auth()->user()->role === 'Employee' || auth()->user()->role === 'admin')
+                <a href="{{ route('service-requests.billing.create', $serviceRequest) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-edit me-1"></i>Edit Billing
+                </a>
                 @endif
                 @else
                 <p class="text-muted">No billing information available.</p>
+                @if(auth()->user()->role === 'Employee' || auth()->user()->role === 'admin')
+                <a href="{{ route('service-requests.billing.create', $serviceRequest) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Create Billing
+                </a>
+                @endif
                 @endif
             </div>
         </div>
+        @else
+        <div class="card text-main">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Cancelled Request
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">This service request has been cancelled.</p>
+                @if($serviceRequest->billing)
+                <p class="text-danger">Note: This request still has billing information that should be removed.</p>
+                <form method="POST" action="{{ route('billing.delete-for-cancelled', $serviceRequest->billing) }}" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this billing?')">
+                        <i class="fas fa-trash me-1"></i>Delete Billing
+                    </button>
+                </form>
+                @else
+                <p class="text-success">No billing record exists for this cancelled request.</p>
+                @endif
+        </div>
+            </div>
+        @endif
 
         @if($serviceRequest->queue)
         <div class="card mt-3 text-main">

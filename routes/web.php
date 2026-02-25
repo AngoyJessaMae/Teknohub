@@ -27,7 +27,17 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('service-requests', ServiceRequestController::class);
     Route::resource('inventory', InventoryController::class);
-    Route::resource('billing', BillingController::class)->only(['index', 'show']);
+    Route::resource('billing', BillingController::class)->only(['index', 'show', 'destroy']);
+    
+    // Billing routes for service requests
+    Route::get('/service-requests/{serviceRequest}/billing/create', [BillingController::class, 'create'])
+        ->name('service-requests.billing.create');
+    Route::post('/service-requests/{serviceRequest}/billing/store', [BillingController::class, 'store'])
+        ->name('service-requests.billing.store');
+    
+    // Delete billing for cancelled requests
+    Route::delete('/billing/{billing}/delete-cancelled', [BillingController::class, 'deleteForCancelled'])
+        ->name('billing.delete-for-cancelled');
 
     Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
     Route::post('/queue/process-next', [QueueController::class, 'processNext'])->name('queue.process-next');

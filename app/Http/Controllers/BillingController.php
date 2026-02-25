@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Billing;
+use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
 
 class BillingController extends Controller
@@ -14,6 +15,73 @@ class BillingController extends Controller
             ->get();
 
         return view('billing.index', compact('billings'));
+    }
+
+    
+    public function create(ServiceRequest $serviceRequest)
+    {
+        // no billing for cancelled requests
+        if ($serviceRequest->status === 'cancelled') {
+            return redirect()->route('service-requests.show', $serviceRequest)
+                ->with('error', 'Cannot create billing for cancelled service request.');
+        }
+        
+        $serviceRequest->load(['customer.user', 'employee.user', 'purchases.item', 'billing']);
+        
+        // calculate toals
+        $partsTotal = $serviceRequest->purchases->sum('total_price');
+        $laborFee = $serviceRequest->billing ? $serviceRequest->billing->labor_fee : 0;
+        $totalAmount = $laborFee + $partsTotal;
+
+        return view('billing.create', compact('serviceRequest', 'laborFee', 'partsTotal', 'totalAmount'));
+    }
+
+    //store billing info
+    public function store(Request $request, ServiceRequest $serviceRequest)
+    {
+        // no billing for cancelled requests
+        if ($serviceRequest->status === 'cancelled') {
+            return redirect()->route('service-requests.show', $serviceRequest)
+                ->with('error', 'Cannot create billing for cancelled service request.');
+        }
+        
+        $validated = $request->validate([
+            'labor_fee' => 'required|numeric|min:0',
+            'parts_fee' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'payment_mode' => 'required|in:Cash,Credit Card,Debit Card,G-Cash,PayMaya,Bank Transfer',
+            'payment_status' => 'required|in:Paid,Unpaid,Pending',
+            'payment_date' => 'nullable|date',
+        ]);
+
+        // Create billing 
+        $billing = $serviceRequest->billing;
+        if (!$billing) {
+            $billing = Billing::create([
+                'service_id' => $serviceRequest->service_id,
+                'labor_fee' => $validated['labor_fee'],
+                'parts_fee' => $validated['parts_fee'],
+                'total_amount' => $validated['total_amount'],
+                'payment_status' => 'Pending',
+            ]);
+        }
+
+        $laborFee = $validated['labor_fee'];
+        $partsFee = $validated['parts_fee'];
+        $totalAmount = $validated['total_amount'];
+
+        // update billing with payment details
+        $billing->update([
+            'labor_fee' => $laborFee,
+            'parts_fee' => $partsFee,
+            'total_amount' => $totalAmount,
+            'payment_mode' => $validated['payment_mode'],
+            'payment_status' => $validated['payment_status'],
+            'payment_date' => $validated['payment_status'] === 'Paid' ? ($validated['payment_date'] ?? now()->toDateString()) : null,
+        ]);
+
+        return redirect()->route('service-requests.show', $serviceRequest)
+            ->with('success', 'Billing generated successfully!');
     }
 
     public function show(Billing $billing)
@@ -33,5 +101,27 @@ class BillingController extends Controller
 
         return redirect()->route('billing.index')
             ->with('success', 'Payment status updated successfully!');
+    }
+
+    //delete billing for cancelled sr
+    public function deleteForCancelled(Billing $billing)
+    {
+        $serviceRequest = $billing->serviceRequest;
+        
+        $billing->delete();
+
+        return redirect()->route('service-requests.show', $serviceRequest)
+            ->with('success', 'Billing deleted successfully!');
+    }
+
+    //remove the del billing from storage
+    public function destroy(Billing $billing)
+    {
+        $serviceRequest = $billing->serviceRequest;
+        
+        $billing->delete();
+
+        return redirect()->route('service-requests.show', $serviceRequest)
+            ->with('success', 'Billing deleted successfully!');
     }
 }
