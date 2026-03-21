@@ -112,6 +112,22 @@
                         @endif
                     @endauth
 
+<div class="mb-3">
+                        <label for="service_type" class="form-label text-main">Service Type</label>
+                        <select class="form-select @error('service_type') is-invalid @enderror" id="service_type" name="service_type" required>
+                            <option value="">Select Service Type</option>
+                            <option value="diagnostic" {{ old('service_type') === 'diagnostic' ? 'selected' : '' }}>Diagnostic</option>
+                            <option value="hardware_repair" {{ old('service_type') === 'hardware_repair' ? 'selected' : '' }}>Hardware Repair</option>
+                            <option value="software_install" {{ old('service_type') === 'software_install' ? 'selected' : '' }}>Software Installation</option>
+                            <option value="cleaning" {{ old('service_type') === 'cleaning' ? 'selected' : '' }}>Cleaning</option>
+                            <option value="upgrade" {{ old('service_type') === 'upgrade' ? 'selected' : '' }}>Upgrade</option>
+                            <option value="data_recovery" {{ old('service_type') === 'data_recovery' ? 'selected' : '' }}>Data Recovery</option>
+                        </select>
+                        @error('service_type')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="mb-3">
                         <label for="device_type" class="form-label text-main">Device Type</label>
                         <select class="form-select @error('device_type') is-invalid @enderror" id="device_type" name="device_type" required>
@@ -132,19 +148,9 @@
                     <div class="mb-3">
                         <label for="device_description" class="form-label text-main">Device Description</label>
                         <textarea class="form-control @error('device_description') is-invalid @enderror"
-                            id="device_description" name="device_description" rows="4"
-                            placeholder="Please describe the issue with your device..." required>{{ old('device_description') }}</textarea>
+                            id="device_description" name="device_description" rows="6"
+                            placeholder="Describe your device and the issue in detail..." required>{{ old('device_description') }}</textarea>
                         @error('device_description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="problem_description" class="form-label text-main">Problem Description (Optional)</label>
-                        <textarea class="form-control @error('problem_description') is-invalid @enderror"
-                            id="problem_description" name="problem_description" rows="3"
-                            placeholder="Provide additional details about the problem...">{{ old('problem_description') }}</textarea>
-                        @error('problem_description')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -157,6 +163,24 @@
                         @error('appointment_request')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-main">Add Parts from Inventory (Optional)</label>
+                        <select class="form-select" id="item_select" onchange="addPart()">
+                            <option value="">No parts needed</option>
+                            @foreach($items as $item)
+                            <option value="{{ $item->item_id }}" data-price="{{ $item->price }}" data-name="{{ $item->item_name }}">
+                                {{ $item->item_name }} (₱{{ number_format($item->price, 2) }} x{{ $item->stock_quantity }})
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="parts_list" class="mb-3" style="display: none;">
+                        <h6>Selected Parts:</h6>
+                        <ul id="parts_items" class="list-group"></ul>
+                        <input type="hidden" id="parts_json" name="parts" value="">
                     </div>
 
                     <div class="mb-3">
@@ -226,27 +250,76 @@
     </div>
 </div>
 
+
 <script>
+    function addPart() {
+        const select = document.getElementById('item_select');
+        const list = document.getElementById('parts_items');
+        const partsList = document.getElementById('parts_list');
+        
+        if (select.value) {
+            partsList.style.display = 'block';
+            const option = select.options[select.selectedIndex];
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                <span>${option.dataset.name}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="number" class="form-control form-control-sm w-auto" min="1" value="1" onchange="updatePartTotal(this)" style="width: 70px;">
+                    <span class="badge bg-success fs-6">₱${option.dataset.price}</span>
+                    <button type="button" class="btn-close" onclick="removePart(this)"></button>
+                    <input type="hidden" name="parts[]" value="${select.value}:1">
+                </div>
+            `;
+            list.appendChild(li);
+            select.value = '';
+            updatePartsJson();
+        }
+    }
+    
+    function updatePartTotal(input) {
+        const li = input.closest('li');
+        const hidden = li.querySelector('input[type="hidden"]');
+        const price = li.querySelector('.badge').textContent.replace('₱', '');
+        const qty = input.value;
+        hidden.value = hidden.value.split(':')[0] + ':' + qty;
+        updatePartsJson();
+    }
+    
+    function removePart(btn) {
+        btn.closest('li').remove();
+        updatePartsJson();
+    }
+    
+    function updatePartsJson() {
+        const partsField = document.getElementById('parts_json');
+        const partsInputs = document.querySelectorAll('input[name="parts[]"]');
+        const partsData = Array.from(partsInputs).map(input => input.value);
+        partsField.value = JSON.stringify(partsData);
+        if (partsData.length === 0) {
+            document.getElementById('parts_list').style.display = 'none';
+        }
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
-        var radios = document.querySelectorAll('.customer-type');
-        var existingSection = document.getElementById('existing_customer_section');
-        var newSection = document.getElementById('new_customer_section');
+        const radios = document.querySelectorAll('.customer-type');
+        const existingSection = document.getElementById('existing_customer_section');
+        const newSection = document.getElementById('new_customer_section');
         
         function toggleSections() {
-            var checked = document.querySelector('.customer-type:checked');
-            if (checked && checked.value === 'existing') {
-                existingSection.style.display = 'block';
-                newSection.style.display = 'none';
-            } else if (checked && checked.value === 'new') {
-                existingSection.style.display = 'none';
-                newSection.style.display = 'block';
+            const checked = document.querySelector('.customer-type:checked');
+            if (checked) {
+                if (checked.value === 'existing') {
+                    existingSection.style.display = 'block';
+                    newSection.style.display = 'none';
+                } else if (checked.value === 'new') {
+                    existingSection.style.display = 'none';
+                    newSection.style.display = 'block';
+                }
             }
         }
         
-        radios.forEach(function(radio) {
-            radio.addEventListener('change', toggleSections);
-        });
-        
+        radios.forEach(radio => radio.addEventListener('change', toggleSections));
         toggleSections();
     });
 </script>

@@ -186,10 +186,10 @@
                 </div>
                 @endif
 
-                @if($serviceRequest->billing->employee_id && $serviceRequest->billing->employee)
+@if($serviceRequest->billing->employee_id && $serviceRequest->billing->employee)
                 <div class="mb-2">
                     <strong>Billing Officer:</strong>
-                    <span>{{ $serviceRequest->billing->employee->user->full_name }}</span>
+                    <span>{{ $serviceRequest->billing->employee->employee_id }} - {{ $serviceRequest->billing->employee->user->full_name }}</span>
                 </div>
                 @endif
 

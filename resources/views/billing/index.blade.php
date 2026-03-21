@@ -9,10 +9,10 @@
     </div>
     <div class="col-md-6 text-end">
         <div class="btn-group">
-            <button class="btn btn-outline-primary" onclick="filterByStatus('all')">All</button>
-            <button class="btn btn-outline-warning" onclick="filterByStatus('pending')">Pending</button>
-            <button class="btn btn-outline-danger" onclick="filterByStatus('unpaid')">Unpaid</button>
-            <button class="btn btn-outline-success" onclick="filterByStatus('paid')">Paid</button>
+            <button class="btn btn-outline-primary active" onclick="filterByStatus('all', event)">All</button>
+            <button class="btn btn-outline-warning" onclick="filterByStatus('pending', event)">Pending</button>
+            <button class="btn btn-outline-danger" onclick="filterByStatus('unpaid', event)">Unpaid</button>
+            <button class="btn btn-outline-success" onclick="filterByStatus('paid', event)">Paid</button>
         </div>
     </div>
 </div>
@@ -30,13 +30,15 @@
                         <th>Parts Fee</th>
                         <th>Total Amount</th>
                         <th>Payment Status</th>
+                        <th>Billing Employee</th>
+                        <th>Date Billed</th>
                         <th>Created</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($billings as $billing)
-                    <tr data-status="{{ $billing->payment_status }}">
+                    <tr data-status="{{ strtolower($billing->payment_status) }}">
                         <td>{{ $billing->billing_id }}</td>
                         <td>{{ $billing->service_id }}</td>
                         <td>{{ $billing->serviceRequest->customer->user->full_name }}</td>
@@ -44,10 +46,15 @@
                         <td>₱{{ number_format($billing->parts_fee, 2) }}</td>
                         <td><strong>₱{{ number_format($billing->total_amount, 2) }}</strong></td>
                         <td>
-                            <span class="badge bg-{{ $billing->payment_status === 'paid' ? 'success' : ($billing->payment_status === 'pending' ? 'warning' : 'danger') }}">
+                            <span class="badge bg-{{ strtolower($billing->payment_status) === 'paid' ? 'success' : (strtolower($billing->payment_status) === 'pending' ? 'warning' : 'danger') }}">
+                                <i class="fas {{ strtolower($billing->payment_status) === 'paid' ? 'fa-check-circle' : (strtolower($billing->payment_status) === 'pending' ? 'fa-clock' : 'fa-times-circle') }} me-1"></i>
                                 {{ ucfirst($billing->payment_status) }}
                             </span>
                         </td>
+                        <td>
+                            {{ $billing->employee ? $billing->employee->employee_id . ' - ' . $billing->employee->user->full_name : 'N/A' }}
+                        </td>
+                        <td>{{ $billing->date_billed ? \Carbon\Carbon::parse($billing->date_billed)->format('M d, Y') : 'N/A' }}</td>
                         <td>{{ $billing->created_at->format('M d, Y') }}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
@@ -81,36 +88,36 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <i class="fas fa-peso-sign fa-2x text-success mb-2"></i>
-                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'paid')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-main">Total Paid</p>
+                <i class="fas fa-peso-sign fa-2x text-success mb-2" data-status-icon="paid"></i>
+                <h3 class="card-title text-main" data-status-total="paid">₱{{ number_format($billings->where('payment_status', 'paid')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main" data-status-label="paid">Total Paid</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'pending')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-main">Pending Payment</p>
+                <i class="fas fa-clock fa-2x text-warning mb-2" data-status-icon="pending"></i>
+                <h3 class="card-title text-main" data-status-total="pending">₱{{ number_format($billings->where('payment_status', 'pending')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main" data-status-label="pending">Pending Payment</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
-                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'unpaid')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-main">Unpaid Amount</p>
+                <i class="fas fa-times-circle fa-2x text-danger mb-2" data-status-icon="unpaid"></i>
+                <h3 class="card-title text-main" data-status-total="unpaid">₱{{ number_format($billings->where('payment_status', 'unpaid')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main" data-status-label="unpaid">Unpaid Amount</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
-                <h3 class="card-title text-main">₱{{ number_format($billings->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-main">Total Revenue</p>
+                <i class="fas fa-chart-line fa-2x text-info mb-2" data-status-icon="all"></i>
+                <h3 class="card-title text-main" data-status-total="all">₱{{ number_format($billings->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main" data-status-label="all">Total Revenue</p>
             </div>
         </div>
     </div>
@@ -119,21 +126,41 @@
 
 @push('scripts')
 <script>
-    function filterByStatus(status) {
+    function filterByStatus(status, event) {
         const table = document.getElementById('billingTable');
         const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
+        let visibleTotal = 0;
         for (let row of rows) {
-            if (status === 'all' || row.getAttribute('data-status') === status) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+            const show = status === 'all' || row.getAttribute('data-status') === status;
+            row.style.display = show ? '' : 'none';
+            if (show) {
+                const totalText = row.cells[5].textContent.replace(/[^0-9.]/g, '');
+                visibleTotal += parseFloat(totalText) || 0;
             }
         }
 
-        const buttons = document.querySelectorAll('.btn-group button');
+        // Update active card for current status
+        const activeStatus = status === 'all' ? 'all' : status;
+        const totalEl = document.querySelector(`[data-status-total="${activeStatus}"]`);
+        const labelEl = document.querySelector(`[data-status-label="${activeStatus}"]`);
+        if (totalEl) {
+            totalEl.textContent = `₱${visibleTotal.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        if (labelEl) {
+            labelEl.textContent = activeStatus === 'all' ? 'Total Revenue' : 
+                                  activeStatus === 'paid' ? 'Total Paid' : 
+                                  activeStatus === 'pending' ? 'Pending Payment' : 'Unpaid Amount';
+        }
+
+        const buttons = document.querySelectorAll('[onclick^=\"filterByStatus\"]');
         buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        event?.target?.classList?.add('active');
     }
+
+    // Initialize totals on page load (default 'all')
+    document.addEventListener('DOMContentLoaded', function() {
+        filterByStatus('all', {target: document.querySelector('.btn.active')});
+    });
 </script>
 @endpush

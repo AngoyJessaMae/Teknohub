@@ -51,29 +51,35 @@
                         <h6 class="text-main">Billing Summary</h6>
                         <div class="bg-light p-3 rounded">
                             <div class="mb-3">
-                                <label for="labor_fee" class="form-label text-main">Labor Fee <span class="text-danger">*</span></label>
+    <label for="labor_fee" class="form-label text-main">Labor Fee <span class="text-danger">*</span> (Suggested: ₱{{ number_format($suggestedLaborFee ?? 50, 2) }})</label>
                                 <div class="input-group">
                                     <span class="input-group-text">₱</span>
                                     <input type="number" class="form-control @error('labor_fee') is-invalid @enderror" 
                                            id="labor_fee" name="labor_fee" 
-                                           value="{{ old('labor_fee', $laborFee) }}" 
+value="{{ old('labor_fee', $suggestedLaborFee) }}" placeholder="Auto-filled from service type (editable)"
                                            step="0.01" min="0" required
                                            oninput="calculateTotal()">
                                 </div>
+                                @if(isset($suggestedLaborFee))
+                                <small class="text-info d-block mt-1">
+                                    💡 Suggested: ₱{{ number_format($suggestedLaborFee, 2) }} for {{ str_replace('_', ' ', $serviceRequest->service_type) }}
+                                </small>
+                                @endif
                                 @error('labor_fee')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             
                             <div class="mb-3">
-                                <label for="parts_fee" class="form-label text-main">Parts Fee <span class="text-danger">*</span></label>
+    <label for="parts_fee" class="form-label text-main">Parts Fee <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">₱</span>
-                                    <input type="number" class="form-control @error('parts_fee') is-invalid @enderror" 
+<input type="number" class="form-control @error('parts_fee') is-invalid @enderror" 
                                            id="parts_fee" name="parts_fee" 
                                            value="{{ old('parts_fee', $partsTotal) }}" 
                                            step="0.01" min="0" required
                                            oninput="calculateTotal()">
+
                                 </div>
                                 @error('parts_fee')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -222,11 +228,12 @@
         var totalAmount = laborFee + partsFee;
         
         document.getElementById('total_amount_display').textContent = '₱' + totalAmount.toFixed(2);
-        document.getElementById('total_amount').value = totalAmount.toFixed(2);
+        document.getElementById('total_amount').value = totalAmount;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         togglePaymentDate();
+        calculateTotal(); // Initialize total on load
     });
 </script>
 @endsection

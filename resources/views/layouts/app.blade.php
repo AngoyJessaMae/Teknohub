@@ -15,22 +15,20 @@
 
     <style>
         :root {
-            --primary-color: #EC4E20;      /* Vibrant Orange */
-            --secondary-color: #7b4884;    /* Grape Soda */
-            --bg-main: #fafaff;            /* Ghost White */
-            --card-bg: #ffffff;            /* Clean white cards */
-            --text-main: #1f2937;          /* Tailwind Gray-800 */
-            --text-muted: #6c757d;         /* Bootstrap Muted */
+            --primary-color: #EC4E20;      
+            --secondary-color: #7b4884;    
+            --bg-main: #fafaff;            
+            --card-bg: #ffffff;            
+            --text-main: #1f2937;          
+            --text-muted: #6c757d;         
             --border-light: #e5e7eb;
-            /* Overriding default Bootstrap colors */
             --bs-body-color: #140f2d;
             --bs-body-color-rgb: 20, 15, 45;
             --bs-primary: #EC4E20;
             --bs-primary-rgb: 236, 78, 32;
-            --bs-secondary: #D300F8;        /* Neon Purple */ 
+            --bs-secondary: #D300F8;        
             --bs-secondary-rgb: 211, 0, 248;
             --bs-card-cap-bg: #ffffff;
-
         }
 
         body {
@@ -39,12 +37,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Text Main fix (it was losing opacity) */
         .text-main {
             color: var(--text-main) !important;
         }
 
-        /* Sidebar */
         .sidebar {
             background-color: #ffffff;
             min-height: 100vh;
@@ -64,13 +60,11 @@
             color: #ffffff;
         }
 
-        /* Main Content */
         .main-content {
             background-color: var(--bg-main);
             min-height: 100vh;
         }
 
-        /* Cards */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -82,7 +76,6 @@
             background-color: #ffffff;
         }
 
-        /* Buttons */
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
@@ -104,7 +97,6 @@
             color: #ffffff;
         }
 
-        /* Tables */
         .table {
             --bs-table-bg: #ffffff;
             --bs-table-border-color: var(--border-light);
@@ -115,30 +107,27 @@
             background-color: #fafaff;
         }
 
-        /* Forms */
         .form-control,
         .form-select {
-            background-color: #f9fafb;           /* Tailwind Gray-50 */
+            background-color: #f9fafb;
             border: 1px solid var(--border-light);
             color: var(--text-main);
         }
 
         .form-control:focus,
         .form-select:focus {
-            background-color: #f9fafb;           /* Tailwind Gray-50 */
+            background-color: #f9fafb;
             border-color: var(--primary-color);
             color: var(--text-main);
             box-shadow: 0 0 0 0.25rem rgba(236, 78, 32, 0.25);
         }
 
-        /* Navbar */
         .navbar-brand {
             color: var(--primary-color) !important;
             font-weight: bold;
             font-size: 1.5rem;
         }
 
-        /* Badge */
         .badge {
             font-size: 0.75rem;
             padding: 0.5em 0.75em;
@@ -169,20 +158,20 @@
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
 
-                        @if(auth()->user()->role === 'Admin')
+                        @if(auth()->user()->role === 'Admin' || auth()->user()->role === 'Employee')
                             <a class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}" href="{{ route('service-requests.index') }}">
                                 <i class="fas fa-wrench me-2"></i>Service Requests
-                            </a>
-                            <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                                <i class="fas fa-boxes me-2"></i>Inventory
                             </a>
                             <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
                                 <i class="fas fa-file-invoice-dollar me-2"></i>Billing
                             </a>
-                        @elseif(auth()->user()->role === 'Employee')
-                            <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                                <i class="fas fa-boxes me-2"></i>Inventory
-                            </a>
+                        @endif
+
+                        <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
+                            <i class="fas fa-boxes me-2"></i>Inventory
+                        </a>
+
+                        @if(auth()->user()->role === 'Employee')
                             <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">
                                 <i class="fas fa-list-ol me-2"></i>Service Queue
                             </a>

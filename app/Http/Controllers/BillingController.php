@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Billing;
 use App\Models\ServiceRequest;
+use App\Models\LaborRate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BillingController extends Controller
 {
@@ -28,12 +30,14 @@ class BillingController extends Controller
         
         $serviceRequest->load(['customer.user', 'employee.user', 'purchases.item', 'billing']);
         
-        // calculate toals
         $partsTotal = $serviceRequest->purchases->sum('total_price');
-        $laborFee = $serviceRequest->billing ? $serviceRequest->billing->labor_fee : 0;
+        $laborRate = \App\Models\LaborRate::where('service_type', $serviceRequest->service_type)->first();
+        $suggestedLaborFee = $laborRate ? $laborRate->standard_fee : 50.00;
+        $billingEmployeeId = Auth::user()->employee ? Auth::user()->employee->employee_id : $serviceRequest->employee_id;
+        $laborFee = $serviceRequest->billing ? $serviceRequest->billing->labor_fee : $suggestedLaborFee;
         $totalAmount = $laborFee + $partsTotal;
 
-        return view('billing.create', compact('serviceRequest', 'laborFee', 'partsTotal', 'totalAmount'));
+        return view('billing.create', compact('serviceRequest', 'laborFee', 'partsTotal', 'totalAmount', 'suggestedLaborFee', 'billingEmployeeId'));
     }
 
     //store billing info
@@ -57,10 +61,11 @@ class BillingController extends Controller
 
         // Create billing 
         $billing = $serviceRequest->billing;
+        $billingEmployeeId = Auth::user()->employee ? Auth::user()->employee->employee_id : $serviceRequest->employee_id;
         if (!$billing) {
             $billing = Billing::create([
                 'service_id' => $serviceRequest->service_id,
-                'employee_id' => $serviceRequest->employee_id,
+                'employee_id' => $billingEmployeeId,
                 'labor_fee' => $validated['labor_fee'],
                 'parts_fee' => $validated['parts_fee'],
                 'total_amount' => $validated['total_amount'],
@@ -74,11 +79,12 @@ class BillingController extends Controller
         $totalAmount = $validated['total_amount'];
 
         // update billing with payment details
+        $billingEmployeeId = Auth::user()->employee ? Auth::user()->employee->employee_id : $serviceRequest->employee_id;
         $billing->update([
             'labor_fee' => $laborFee,
             'parts_fee' => $partsFee,
             'total_amount' => $totalAmount,
-            'employee_id' => $serviceRequest->employee_id,
+            'employee_id' => $billingEmployeeId,
             'warranty' => $validated['warranty'] ?? $billing->warranty,
             'payment_mode' => $validated['payment_mode'],
             'payment_status' => $validated['payment_status'],

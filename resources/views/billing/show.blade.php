@@ -36,7 +36,8 @@
                     <div class="col-md-6">
                         <h6 class="text-main">Payment Status</h6>
                         <div class="d-grid">
-                            <span class="badge fs-5 bg-{{ $billing->payment_status === 'paid' ? 'success' : ($billing->payment_status === 'pending' ? 'warning' : 'danger') }}">
+                            <span class="badge fs-5 bg-{{ strtolower($billing->payment_status) === 'paid' ? 'success' : (strtolower($billing->payment_status) === 'pending' ? 'warning' : 'danger') }}">
+                                <i class="fas {{ strtolower($billing->payment_status) === 'paid' ? 'fa-check-circle' : (strtolower($billing->payment_status) === 'pending' ? 'fa-clock' : 'fa-times-circle') }} me-1"></i>
                                 {{ ucfirst($billing->payment_status) }}
                             </span>
                         </div>
@@ -98,6 +99,8 @@
                 <p><strong>Device:</strong> {{ $billing->serviceRequest->device_type }}</p>
                 <p><strong>Problem:</strong> {{ $billing->serviceRequest->problem_description }}</p>
                 <hr>
+<p><strong>Billing Employee:</strong> {{ $billing->employee ? $billing->employee->employee_id . ' - ' . $billing->employee->user->full_name : 'N/A' }}</p>
+                <p><strong>Date Billed:</strong> {{ $billing->date_billed ? \Carbon\Carbon::parse($billing->date_billed)->format('M d, Y') : 'N/A' }}</p>
                 <p><strong>Date Created:</strong> {{ $billing->created_at->format('M d, Y') }}</p>
                 <p><strong>Last Updated:</strong> {{ $billing->updated_at->format('M d, Y') }}</p>
             </div>

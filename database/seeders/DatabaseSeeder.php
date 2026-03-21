@@ -10,6 +10,7 @@ use App\Models\Queue;
 use App\Models\Item;
 use App\Models\Purchase;
 use App\Models\Billing;
+use App\Models\LaborRate;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
@@ -28,6 +29,7 @@ class DatabaseSeeder extends Seeder
 
         // Truncate all tables to start from a clean state
         DB::table('users')->truncate();
+        DB::table('labor_rates')->truncate();
         DB::table('employees')->truncate();
         DB::table('customers')->truncate();
         DB::table('service_requests')->truncate();
@@ -129,16 +131,25 @@ class DatabaseSeeder extends Seeder
         ]);
         $customer2 = Customer::create(['user_id' => $customerUser2->user_id]);
 
-        // 5. Create Inventory Items
+// 4. Create Labor Rates
+        LaborRate::create(['service_type' => 'diagnostic', 'standard_fee' => 100.00, 'description' => 'Basic diagnostic fee']);
+        LaborRate::create(['service_type' => 'hardware_repair', 'standard_fee' => 500.00, 'description' => 'Hardware repair labor']);
+        LaborRate::create(['service_type' => 'software_install', 'standard_fee' => 200.00, 'description' => 'Software installation']);
+        LaborRate::create(['service_type' => 'cleaning', 'standard_fee' => 150.00, 'description' => 'Device cleaning']);
+        LaborRate::create(['service_type' => 'upgrade', 'standard_fee' => 300.00, 'description' => 'Hardware upgrade']);
+        LaborRate::create(['service_type' => 'data_recovery', 'standard_fee' => 800.00, 'description' => 'Data recovery services']);
+
+// 5. Create Inventory Items
         Item::create(['item_name' => 'Laptop Battery A-123', 'category' => 'Hardware', 'price' => 85.50, 'stock_quantity' => 20]);
         Item::create(['item_name' => '256GB SSD', 'category' => 'Components', 'price' => 45.00, 'stock_quantity' => 30]);
         Item::create(['item_name' => '15.6" LCD Screen', 'category' => 'Hardware', 'price' => 120.00, 'stock_quantity' => 15]);
         $itemForPurchase = Item::create(['item_name' => '8GB DDR4 RAM', 'category' => 'Components', 'price' => 35.75, 'stock_quantity' => 50]);
 
         // 6. Create Service Requests, Queue, and Billing
-        $serviceRequest1 = ServiceRequest::create([
+$serviceRequest1 = ServiceRequest::create([
             'customer_id' => $customer2->customer_id,
             'employee_id' => $employee1->employee_id,
+            'service_type' => 'hardware_repair',
             'device_type' => 'Laptop',
             'device_description' => 'Fails to boot, makes clicking noises.',
             'date_created' => Carbon::now()->subDays(2),
@@ -159,8 +170,9 @@ class DatabaseSeeder extends Seeder
             'payment_status' => 'Unpaid',
         ]);
 
-        $serviceRequest2 = ServiceRequest::create([
+$serviceRequest2 = ServiceRequest::create([
             'customer_id' => $customer2->customer_id,
+            'service_type' => 'hardware_repair',
             'device_type' => 'Smartphone',
             'device_description' => 'Cracked screen after a drop.',
             'date_created' => Carbon::now()->subDay(),
@@ -182,9 +194,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 7. Create a completed Service with a Purchase
-        $completedService = ServiceRequest::create([
+$completedService = ServiceRequest::create([
             'customer_id' => $customer2->customer_id,
             'employee_id' => $employee1->employee_id,
+            'service_type' => 'upgrade',
             'device_type' => 'Laptop',
             'device_description' => 'Needed a RAM upgrade.',
             'date_created' => Carbon::now()->subDays(5),
