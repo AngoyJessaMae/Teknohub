@@ -101,6 +101,24 @@
 
                     <hr>
 
+                    <!-- warranty -->
+                    <div class="mb-4">
+                        <h6 class="text-main">Additional Information</h6>
+                        
+                        <div class="mb-3">
+                            <label for="warranty" class="form-label text-main">Warranty (Optional)</label>
+                            <input type="text" class="form-control @error('warranty') is-invalid @enderror" 
+                                   id="warranty" name="warranty" 
+                                   placeholder="e.g., 1 year parts warranty"
+                                   value="{{ old('warranty') }}">
+                            @error('warranty')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <hr>
+
                     <!-- payment dets -->
                     <div class="mb-4">
                         <h6 class="text-main">Payment Details</h6>

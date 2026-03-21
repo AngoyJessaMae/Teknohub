@@ -28,7 +28,10 @@ class QueueController extends Controller
 
         $queue = Queue::create([
             'service_id' => $validated['service_id'],
+            'queue_number' => $maxQueuePosition + 1,
             'queue_position' => $maxQueuePosition + 1,
+            'priority_level' => 'Normal',
+            'queue_status' => 'waiting',
             'status' => 'waiting',
         ]);
 
@@ -44,6 +47,9 @@ class QueueController extends Controller
         ]);
 
         $queue->update($validated);
+        $queue->update([
+            'queue_number' => $validated['queue_position'],
+        ]);
 
         return redirect()->route('queue.index')
             ->with('success', 'Queue position updated!');
@@ -62,11 +68,18 @@ class QueueController extends Controller
 
         $serviceRequest = $nextInQueue->serviceRequest;
         $serviceRequest->update(['status' => 'in_progress']);
-        $nextInQueue->update(['status' => 'in_progress']);
+        $nextInQueue->update([
+            'status' => 'in_progress',
+            'queue_status' => 'in_progress',
+        ]);
 
         Queue::where('status', 'waiting')
             ->where('queue_position', '>', $nextInQueue->queue_position)
             ->decrement('queue_position');
+
+        Queue::where('status', 'waiting')
+            ->where('queue_position', '>', $nextInQueue->queue_position)
+            ->decrement('queue_number');
 
         return redirect()->route('service-requests.edit', $serviceRequest)
             ->with('success', 'Processing next service request!');

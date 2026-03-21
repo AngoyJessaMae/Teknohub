@@ -25,4 +25,9 @@ class Employee extends Model
     {
         return $this->hasMany(ServiceRequest::class, 'employee_id', 'employee_id');
     }
+
+    public function billings(): HasMany
+    {
+        return $this->hasMany(Billing::class, 'employee_id', 'employee_id');
+    }
 }

@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([
@@ -58,7 +58,7 @@ class AuthController extends Controller
             'full_name' => $validated['full_name'],
             'email' => $validated['email'],
             'contact_number' => $validated['contact_number'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'],
             'role' => $validated['role'],
             'account_status' => 'Active',
         ]);
@@ -78,7 +78,9 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('/dashboard');
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard');
     }
 
     public function logout(Request $request)

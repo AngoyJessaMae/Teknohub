@@ -11,7 +11,10 @@ class Queue extends Model
 
     protected $fillable = [
         'service_id',
+        'queue_number',
         'queue_position',
+        'priority_level',
+        'queue_status',
         'status',
     ];
 

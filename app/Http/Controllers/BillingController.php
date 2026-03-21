@@ -49,6 +49,7 @@ class BillingController extends Controller
             'labor_fee' => 'required|numeric|min:0',
             'parts_fee' => 'required|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
+            'warranty' => 'nullable|string|max:255',
             'payment_mode' => 'required|in:Cash,Credit Card,Debit Card,G-Cash,PayMaya,Bank Transfer',
             'payment_status' => 'required|in:Paid,Unpaid,Pending',
             'payment_date' => 'nullable|date',
@@ -59,10 +60,12 @@ class BillingController extends Controller
         if (!$billing) {
             $billing = Billing::create([
                 'service_id' => $serviceRequest->service_id,
+                'employee_id' => $serviceRequest->employee_id,
                 'labor_fee' => $validated['labor_fee'],
                 'parts_fee' => $validated['parts_fee'],
                 'total_amount' => $validated['total_amount'],
                 'payment_status' => 'Pending',
+                'date_billed' => now()->toDateString(),
             ]);
         }
 
@@ -75,8 +78,11 @@ class BillingController extends Controller
             'labor_fee' => $laborFee,
             'parts_fee' => $partsFee,
             'total_amount' => $totalAmount,
+            'employee_id' => $serviceRequest->employee_id,
+            'warranty' => $validated['warranty'] ?? $billing->warranty,
             'payment_mode' => $validated['payment_mode'],
             'payment_status' => $validated['payment_status'],
+            'date_billed' => $billing->date_billed ?? now()->toDateString(),
             'payment_date' => $validated['payment_status'] === 'Paid' ? ($validated['payment_date'] ?? now()->toDateString()) : null,
         ]);
 
@@ -94,7 +100,7 @@ class BillingController extends Controller
     public function updatePaymentStatus(Request $request, Billing $billing)
     {
         $validated = $request->validate([
-            'payment_status' => 'required|in:paid,unpaid,pending',
+            'payment_status' => 'required|in:Paid,Unpaid,Pending',
         ]);
 
         $billing->update($validated);

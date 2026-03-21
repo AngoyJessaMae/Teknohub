@@ -11,6 +11,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PurchaseController;
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
     return redirect()->route('login');
 });
 
@@ -49,6 +52,5 @@ Route::middleware('auth')->group(function () {
         ->name('billing.update-payment-status');
 
     // Routes for employee management
-    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-    Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+    Route::resource('employees', EmployeeController::class);
 });

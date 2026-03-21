@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-edit me-2"></i>Edit Inventory Item
                 </h5>
@@ -20,7 +20,7 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label for="name" class="form-label">Item Name</label>
+                        <label for="name" class="form-label text-main">Item Name</label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror"
                             id="name" name="name" value="{{ old('name', $item->name) }}" required>
                         @error('name')
@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
+                        <label for="description" class="form-label text-main">Description</label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                             id="description" name="description">{{ old('description', $item->description) }}</textarea>
                         @error('description')
@@ -39,7 +39,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="price" class="form-label">Price ($)</label>
+                            <label for="price" class="form-label text-main">Price ($)</label>
                             <input type="number" step="0.01" min="0"
                                 class="form-control @error('price') is-invalid @enderror"
                                 id="price" name="price" value="{{ old('price', $item->price) }}" required>
@@ -48,7 +48,7 @@
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="quantity" class="form-label">Stock Quantity</label>
+                            <label for="quantity" class="form-label text-main">Stock Quantity</label>
                             <input type="number" min="0"
                                 class="form-control @error('quantity') is-invalid @enderror"
                                 id="quantity" name="quantity" value="{{ old('quantity', $item->quantity) }}" required>
@@ -73,7 +73,7 @@
 
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-chart-bar me-2"></i>Item Statistics
                 </h5>
@@ -81,19 +81,19 @@
             <div class="card-body">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
-                        <span>Total Used:</span>
-                        <strong>{{ $item->purchases->sum('quantity') }}</strong>
+                        <span class="text-main">Total Used:</span>
+                        <strong class="text-main">{{ $item->purchases->sum('quantity') }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
-                        <span>Total Revenue:</span>
-                        <strong>${{ number_format($item->purchases->sum('total_price'), 2) }}</strong>
+                        <span class="text-main">Total Revenue:</span>
+                        <strong class="text-main">${{ number_format($item->purchases->sum('total_price'), 2) }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
-                        <span>Stock Status:</span>
+                        <span class="text-main">Stock Status:</span>
                         <strong class="{{ $item->quantity < 5 ? 'text-danger' : 'text-success' }}">
                             {{ $item->quantity < 5 ? 'Low Stock' : 'In Stock' }}
                         </strong>
@@ -103,7 +103,7 @@
         </div>
 
         <div class="card mt-3">
-            <div class="card-header">
+            <div class="card-header text-main">
                 <h5 class="mb-0">
                     <i class="fas fa-history me-2"></i>Recent Activity
                 </h5>
@@ -111,7 +111,7 @@
             <div class="card-body">
                 @if($item->purchases->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-dark table-sm">
+                    <table class="table table-sm">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -131,7 +131,7 @@
                     </table>
                 </div>
                 @else
-                <p class="text-muted small">No recent activity for this item.</p>
+                <p class="text-main small">No recent activity for this item.</p>
                 @endif
             </div>
         </div>

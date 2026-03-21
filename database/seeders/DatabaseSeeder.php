@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
 
-        // 1. Create Fixed Admin User
+        // 1. Create Admin Users
         User::create([
             'full_name' => 'Admin User',
             'email' => 'admin@teknohub.com',
@@ -50,38 +50,60 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => Carbon::now(),
         ]);
 
-        // 2. Create an Active Employee
-        $activeEmployeeUser = User::create([
-            'full_name' => 'John Doe',
-            'email' => 'johndoe@teknohub.com',
+        User::create([
+            'full_name' => 'Super Admin',
+            'email' => 'superadmin@teknohub.com',
             'contact_number' => '0987654321',
             'password' => Hash::make('password'),
-            'role' => 'Employee',
+            'role' => 'Admin',
             'account_status' => 'Active',
             'email_verified_at' => Carbon::now(),
         ]);
 
-        Employee::create([
-            'user_id' => $activeEmployeeUser->user_id,
+        // 2. Create Employee Users
+        $employee1 = Employee::create([
+            'user_id' => User::create([
+                'full_name' => 'John Doe',
+                'email' => 'johndoe@teknohub.com',
+                'contact_number' => '1112223333',
+                'password' => Hash::make(1), // Employee ID will be 1
+                'role' => 'Employee',
+                'account_status' => 'Active',
+                'email_verified_at' => Carbon::now(),
+            ])->user_id,
             'department_name' => 'Hardware Repair',
             'job_title' => 'Senior Technician',
+            'skills' => 'Component-level repair, soldering, diagnostics',
         ]);
 
-        // 3. Create a Pending Employee
-        $pendingEmployeeUser = User::create([
-            'full_name' => 'Jane Smith',
-            'email' => 'janesmith@teknohub.com',
-            'contact_number' => '1122334455',
-            'password' => Hash::make('password'),
-            'role' => 'Employee',
-            'account_status' => 'Pending',
-            'email_verified_at' => Carbon::now(),
+        $employee2 = Employee::create([
+            'user_id' => User::create([
+                'full_name' => 'Jane Smith',
+                'email' => 'janesmith@teknohub.com',
+                'contact_number' => '4445556666',
+                'password' => Hash::make(2), // Employee ID will be 2
+                'role' => 'Employee',
+                'account_status' => 'Active',
+                'email_verified_at' => Carbon::now(),
+            ])->user_id,
+            'department_name' => 'Software Support',
+            'job_title' => 'Software Specialist',
+            'skills' => 'OS troubleshooting, malware removal, data recovery',
         ]);
 
-        Employee::create([
-            'user_id' => $pendingEmployeeUser->user_id,
-            'department_name' => 'Customer Support',
-            'job_title' => 'Trainee',
+        $employee3 = Employee::create([
+            'user_id' => User::create([
+                'full_name' => 'Peter Jones',
+                'email' => 'peterjones@teknohub.com',
+                'contact_number' => '7778889999',
+                'password' => Hash::make(3), // Employee ID will be 3
+                'role' => 'Employee',
+                'account_status' => 'Pending',
+                'email_verified_at' => Carbon::now(),
+            ])->user_id,
+            'department_name' => 'Hardware Repair',
+            'job_title' => 'Junior Technician',
+            'skills' => 'Screen replacement, battery swaps',
         ]);
 
         // 4. Create Customers
@@ -116,7 +138,7 @@ class DatabaseSeeder extends Seeder
         // 6. Create Service Requests, Queue, and Billing
         $serviceRequest1 = ServiceRequest::create([
             'customer_id' => $customer2->customer_id,
-            'employee_id' => $activeEmployeeUser->employee->employee_id,
+            'employee_id' => $employee1->employee_id,
             'device_type' => 'Laptop',
             'device_description' => 'Fails to boot, makes clicking noises.',
             'date_created' => Carbon::now()->subDays(2),
@@ -162,7 +184,7 @@ class DatabaseSeeder extends Seeder
         // 7. Create a completed Service with a Purchase
         $completedService = ServiceRequest::create([
             'customer_id' => $customer2->customer_id,
-            'employee_id' => $activeEmployeeUser->employee->employee_id,
+            'employee_id' => $employee1->employee_id,
             'device_type' => 'Laptop',
             'device_description' => 'Needed a RAM upgrade.',
             'date_created' => Carbon::now()->subDays(5),
@@ -186,8 +208,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->info('TeknoHub database seeded successfully!');
-        $this->command->info('Admin Login: admin@teknohub.com / password');
-        $this->command->info('Employee Login: johndoe@teknohub.com / password');
-        $this->command->info('Customer Login: alice@example.com / password');
+        $this->command->info('Admin Logins: admin@teknohub.com / superadmin@teknohub.com (password: password)');
+        $this->command->info('Employee Logins: Use email and their Employee ID as the password.');
+        $this->command->info('Customer Logins: alice@example.com / bob@example.com (password: password)');
     }
 }

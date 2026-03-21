@@ -43,8 +43,29 @@
 
                 <div class="mb-3">
                     <h6>Device Description</h6>
-                    <p class="text-muted">{{ $serviceRequest->device_description }}</p>
+                    <p class="text-main">{{ $serviceRequest->device_description }}</p>
                 </div>
+
+                @if($serviceRequest->problem_description)
+                <div class="mb-3">
+                    <h6>Problem Description</h6>
+                    <p class="text-main">{{ $serviceRequest->problem_description }}</p>
+                </div>
+                @endif
+
+                @if($serviceRequest->date_received)
+                <div class="mb-3">
+                    <h6>Date Received</h6>
+                    <p class="text-main">{{ \Carbon\Carbon::parse($serviceRequest->date_received)->format('M d, Y H:i') }}</p>
+                </div>
+                @endif
+
+                @if($serviceRequest->appointment_request)
+                <div class="mb-3">
+                    <h6>Requested Appointment</h6>
+                    <p class="text-main">{{ \Carbon\Carbon::parse($serviceRequest->appointment_request)->format('M d, Y H:i') }}</p>
+                </div>
+                @endif
 
                 @if($serviceRequest->employee)
                 <div class="mb-3">
@@ -158,6 +179,27 @@
                     </div>
                 </div>
 
+                @if($serviceRequest->billing->warranty)
+                <div class="mb-2">
+                    <strong>Warranty:</strong>
+                    <span>{{ $serviceRequest->billing->warranty }}</span>
+                </div>
+                @endif
+
+                @if($serviceRequest->billing->employee_id && $serviceRequest->billing->employee)
+                <div class="mb-2">
+                    <strong>Billing Officer:</strong>
+                    <span>{{ $serviceRequest->billing->employee->user->full_name }}</span>
+                </div>
+                @endif
+
+                @if($serviceRequest->billing->date_billed)
+                <div class="mb-2">
+                    <strong>Date Billed:</strong>
+                    <span>{{ \Carbon\Carbon::parse($serviceRequest->billing->date_billed)->format('M d, Y') }}</span>
+                </div>
+                @endif
+
                 @if($serviceRequest->billing->payment_mode)
                 <div class="mb-2">
                     <strong>Mode of Payment:</strong>
@@ -228,9 +270,19 @@
             </div>
             <div class="card-body">
                 <p class="mb-1"><strong>Position:</strong> #{{ $serviceRequest->queue->queue_position }}</p>
+                @if($serviceRequest->queue->queue_number)
+                <p class="mb-1"><strong>Queue Number:</strong> {{ $serviceRequest->queue->queue_number }}</p>
+                @endif
+                @if($serviceRequest->queue->priority_level)
+                <p class="mb-1"><strong>Priority Level:</strong> 
+                    <span class="badge bg-{{ $serviceRequest->queue->priority_level === 'Urgent' ? 'danger' : ($serviceRequest->queue->priority_level === 'High' ? 'warning' : 'secondary') }}">
+                        {{ $serviceRequest->queue->priority_level }}
+                    </span>
+                </p>
+                @endif
                 <p class="mb-0"><strong>Status:</strong>
-                    <span class="badge bg-{{ $serviceRequest->queue->status === 'completed' ? 'success' : ($serviceRequest->queue->status === 'in_progress' ? 'warning' : 'secondary') }}">
-                        {{ ucfirst(str_replace('_', ' ', $serviceRequest->queue->status)) }}
+                    <span class="badge bg-{{ $serviceRequest->queue->queue_status === 'completed' ? 'success' : ($serviceRequest->queue->queue_status === 'in_progress' ? 'warning' : 'secondary') }}">
+                        {{ ucfirst(str_replace('_', ' ', $serviceRequest->queue->queue_status ?? $serviceRequest->queue->status)) }}
                     </span>
                 </p>
             </div>

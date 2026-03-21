@@ -25,12 +25,22 @@
                 <span class="badge bg-{{ $queue->queue_position === 1 ? 'success' : 'primary' }} fs-6">
                     Position #{{ $queue->queue_position }}
                 </span>
-                <span class="badge bg-{{ $queue->status === 'in_progress' ? 'warning' : 'secondary' }}">
-                    {{ ucfirst(str_replace('_', ' ', $queue->status)) }}
+                <span class="badge bg-{{ ($queue->queue_status ?? $queue->status) === 'in_progress' ? 'warning' : 'secondary' }}">
+                    {{ ucfirst(str_replace('_', ' ', $queue->queue_status ?? $queue->status)) }}
                 </span>
             </div>
             <div class="card-body text-main">
                 <h6 class="card-title">Service Request #{{ $queue->serviceRequest->service_id }}</h6>
+                @if($queue->queue_number)
+                <p class="small"><strong>Queue #:</strong> {{ $queue->queue_number }}</p>
+                @endif
+                @if($queue->priority_level)
+                <p class="small"><strong>Priority:</strong> 
+                    <span class="badge bg-{{ $queue->priority_level === 'Urgent' ? 'danger' : ($queue->priority_level === 'High' ? 'warning' : 'secondary') }} rounded-sm">
+                        {{ $queue->priority_level }}
+                    </span>
+                </p>
+                @endif
                 <p class="card-text">
                     <strong>Customer:</strong> {{ $queue->serviceRequest->customer->user->full_name }}<br>
                     <strong>Device:</strong> {{ $queue->serviceRequest->device_type }}<br>
@@ -80,7 +90,7 @@
                         <p class="text-muted mb-0">Total in Queue</p>
                     </div>
                     <div class="col-md-3">
-                        <h4 class="text-warning">{{ $queues->where('status', 'in_progress')->count() }}</h4>
+                        <h4 class="text-warning">{{ $queues->whereIn('queue_status', ['in_progress'])->count() ?: $queues->where('status', 'in_progress')->count() }}</h4>
                         <p class="text-muted mb-0">In Progress</p>
                     </div>
                     <div class="col-md-3">

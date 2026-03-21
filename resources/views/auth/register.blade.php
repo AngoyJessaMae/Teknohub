@@ -59,34 +59,14 @@
                             id="password_confirmation" name="password_confirmation" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="role" class="form-label text-main">Register as</label>
+                    <div class="mb-4">
+                        <label for="role" class="form-label text-main">Register As</label>
                         <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
-                            <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer</option>
-                            <option value="Employee" {{ old('role') == 'Employee' ? 'selected' : '' }}>Employee</option>
+                            <option value="Customer" selected>Customer</option>
                         </select>
                         @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-
-                    <div id="employee_fields" style="display: none;">
-                        <div class="mb-3">
-                            <label for="department_name" class="form-label text-main">Department</label>
-                            <input type="text" class="form-control @error('department_name') is-invalid @enderror"
-                                id="department_name" name="department_name" value="{{ old('department_name') }}">
-                            @error('department_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="job_title" class="form-label text-main">Job Title</label>
-                            <input type="text" class="form-control @error('job_title') is-invalid @enderror"
-                                id="job_title" name="job_title" value="{{ old('job_title') }}">
-                            @error('job_title')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
                     </div>
 
                     <div class="d-grid">
@@ -109,23 +89,5 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const roleSelect = document.getElementById('role');
-        const employeeFields = document.getElementById('employee_fields');
 
-        function toggleEmployeeFields() {
-            if (roleSelect.value === 'Employee') {
-                employeeFields.style.display = 'block';
-            } else {
-                employeeFields.style.display = 'none';
-            }
-        }
-
-        toggleEmployeeFields();
-        roleSelect.addEventListener('change', toggleEmployeeFields);
-    });
-</script>
-@endpush
 @endsection

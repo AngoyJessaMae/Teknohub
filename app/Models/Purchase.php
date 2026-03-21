@@ -12,12 +12,15 @@ class Purchase extends Model
     protected $fillable = [
         'item_id',
         'service_id',
+        'customer_id',
         'quantity',
         'total_price',
+        'date_purchased',
     ];
 
     protected $casts = [
         'total_price' => 'decimal:2',
+        'date_purchased' => 'datetime',
     ];
 
     public function item(): BelongsTo
@@ -28,5 +31,10 @@ class Purchase extends Model
     public function serviceRequest(): BelongsTo
     {
         return $this->belongsTo(ServiceRequest::class, 'service_id', 'service_id');
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
 }

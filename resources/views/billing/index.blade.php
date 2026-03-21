@@ -82,8 +82,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-peso-sign fa-2x text-success mb-2"></i>
-                <h3 class="card-title">₱{{ number_format($billings->where('payment_status', 'paid')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-muted">Total Paid</p>
+                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'paid')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main">Total Paid</p>
             </div>
         </div>
     </div>
@@ -91,8 +91,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                <h3 class="card-title">₱{{ number_format($billings->where('payment_status', 'pending')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-muted">Pending Payment</p>
+                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'pending')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main">Pending Payment</p>
             </div>
         </div>
     </div>
@@ -100,8 +100,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
-                <h3 class="card-title">₱{{ number_format($billings->where('payment_status', 'unpaid')->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-muted">Unpaid Amount</p>
+                <h3 class="card-title text-main">₱{{ number_format($billings->where('payment_status', 'unpaid')->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main">Unpaid Amount</p>
             </div>
         </div>
     </div>
@@ -109,8 +109,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
-                <h3 class="card-title">₱{{ number_format($billings->sum('total_amount'), 2) }}</h3>
-                <p class="card-text text-muted">Total Revenue</p>
+                <h3 class="card-title text-main">₱{{ number_format($billings->sum('total_amount'), 2) }}</h3>
+                <p class="card-text text-main">Total Revenue</p>
             </div>
         </div>
     </div>

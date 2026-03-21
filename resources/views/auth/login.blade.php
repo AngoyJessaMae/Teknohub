@@ -11,7 +11,7 @@
                     <h2 class="text-primary mb-1">
                         <i class="fas fa-tools me-2"></i>TeknoHub
                     </h2>
-                    <p class="text-muted">Service Request & Repair Management</p>
+                    <p class="text-main">Service Request & Repair Management</p>
                 </div>
 
                 <form method="POST" action="{{ route('login') }}">
@@ -45,7 +45,7 @@
                 <hr class="my-4">
 
                 <div class="text-center">
-                    <p class="text-muted mb-0">Don't have an account?</p>
+                    <p class="text-main mb-0">Don't have an account?</p>
                     <a href="{{ route('register') }}" class="text-secondary text-decoration-none">
                         Create Account
                     </a>

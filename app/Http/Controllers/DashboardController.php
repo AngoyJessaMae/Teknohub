@@ -14,18 +14,26 @@ class DashboardController extends Controller
         $user = Auth::user();
         $role = $user->role;
 
-        // Common data for all dashboards (if applicable, or can be moved into role-specific blocks)
-        $totalRequests = ServiceRequest::count();
-        $pendingRepairs = ServiceRequest::where('status', 'pending')->count();
-        $completedRepairs = ServiceRequest::where('status', 'completed')->count();
-        $totalRevenue = Billing::where('payment_status', 'Paid')->sum('total_amount');
+
 
         if ($role === 'Customer') {
-            $customerRequests = ServiceRequest::where('customer_id', $user->customer->customer_id)
-                ->with(['employee.user', 'billing'])
-                ->latest()
-                ->take(5)
-                ->get();
+            $customerRequests = collect();
+            $totalRequests = 0;
+            $pendingRepairs = 0;
+            $completedRepairs = 0;
+
+            if ($user->customer) {
+                $customerId = $user->customer->customer_id;
+                $customerRequests = ServiceRequest::where('customer_id', $customerId)
+                    ->with(['employee.user', 'billing'])
+                    ->latest()
+                    ->take(5)
+                    ->get();
+
+                $totalRequests = ServiceRequest::where('customer_id', $customerId)->count();
+                $pendingRepairs = ServiceRequest::where('customer_id', $customerId)->where('status', 'pending')->count();
+                $completedRepairs = ServiceRequest::where('customer_id', $customerId)->where('status', 'completed')->count();
+            }
 
             return view('dashboard.customer', compact('customerRequests', 'totalRequests', 'pendingRepairs', 'completedRepairs'));
         }
@@ -59,26 +67,31 @@ class DashboardController extends Controller
         }
 
         if ($role === 'Admin') {
+            $stats = ServiceRequest::selectRaw('
+                COUNT(*) as totalRequests,
+                SUM(CASE WHEN status = \'pending\' THEN 1 ELSE 0 END) as pendingRepairs,
+                SUM(CASE WHEN status = \'completed\' THEN 1 ELSE 0 END) as completedRepairs
+            ')->first();
+
+            $totalRevenue = Billing::where('payment_status', 'Paid')->sum('total_amount');
+
             $recentRequests = ServiceRequest::with(['customer.user', 'employee.user'])
                 ->latest()
                 ->take(5)
                 ->get();
 
-            $totalUsers = User::count();
-            $totalEmployees = User::where('role', 'Employee')->count();
-            $pendingEmployeeApprovals = User::where('role', 'Employee')->where('account_status', 'Pending')->count();
-            $totalCustomers = User::where('role', 'Customer')->count();
+            $userStats = User::selectRaw('
+                COUNT(*) as totalUsers,
+                SUM(CASE WHEN role = \'Employee\' THEN 1 ELSE 0 END) as totalEmployees,
+                SUM(CASE WHEN role = \'Employee\' AND account_status = \'Pending\' THEN 1 ELSE 0 END) as pendingEmployeeApprovals,
+                SUM(CASE WHEN role = \'Customer\' THEN 1 ELSE 0 END) as totalCustomers
+            ')->first();
 
             return view('dashboard.admin', compact(
-                'totalRequests',
-                'pendingRepairs',
-                'completedRepairs',
+                'stats',
                 'totalRevenue',
                 'recentRequests',
-                'totalUsers',
-                'totalEmployees',
-                'pendingEmployeeApprovals',
-                'totalCustomers'
+                'userStats'
             ));
         }
 

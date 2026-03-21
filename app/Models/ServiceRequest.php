@@ -16,14 +16,19 @@ class ServiceRequest extends Model
         'employee_id',
         'device_type',
         'device_description',
+        'problem_description',
+        'date_received',
         'date_created',
         'date_completed',
+        'appointment_request',
         'status',
     ];
 
     protected $casts = [
         'date_created' => 'datetime',
         'date_completed' => 'datetime',
+        'date_received' => 'datetime',
+        'appointment_request' => 'datetime',
     ];
 
     public function customer(): BelongsTo

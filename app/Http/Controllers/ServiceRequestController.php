@@ -25,10 +25,14 @@ class ServiceRequestController extends Controller
                 ->latest()
                 ->get();
         } elseif ($user->role === 'Employee') {
-            $requests = ServiceRequest::where('employee_id', $user->employee->employee_id)
-                ->with(['customer.user', 'billing'])
-                ->latest()
-                ->get();
+            $employeeId = $user->employee->employee_id;
+            $requests = ServiceRequest::where(function ($query) use ($employeeId) {
+                $query->where('employee_id', $employeeId)
+                    ->orWhereNull('employee_id');
+            })
+            ->with(['customer.user', 'billing'])
+            ->latest()
+            ->get();
         } else {
             $requests = ServiceRequest::with(['customer.user', 'employee.user', 'billing'])
                 ->latest()
@@ -63,6 +67,9 @@ class ServiceRequestController extends Controller
         $validated = $request->validate([
             'device_type' => 'required',
             'device_description' => 'required',
+            'problem_description' => 'nullable|string',
+            'appointment_request' => 'nullable|date',
+            'priority_level' => 'nullable|string|max:50',
         ]);
 
         // Handle customer based on user role
@@ -109,7 +116,10 @@ class ServiceRequestController extends Controller
             'employee_id' => $employeeId,
             'device_type' => $request->device_type,
             'device_description' => $request->device_description,
+            'problem_description' => $request->problem_description,
             'date_created' => Carbon::now(),
+            'date_received' => Carbon::now(),
+            'appointment_request' => $request->appointment_request,
             'status' => 'pending',
         ]);
 
@@ -118,8 +128,22 @@ class ServiceRequestController extends Controller
 
         Queue::create([
             'service_id' => $serviceRequest->service_id,
+            'queue_number' => $nextPosition,
             'queue_position' => $nextPosition,
+            'priority_level' => $request->priority_level ?? 'Normal',
+            'queue_status' => 'waiting',
             'status' => 'waiting',
+        ]);
+
+        // Keep billing available from creation time to match the ERD flow.
+        Billing::create([
+            'service_id' => $serviceRequest->service_id,
+            'employee_id' => $employeeId,
+            'labor_fee' => 50,
+            'parts_fee' => 0,
+            'total_amount' => 50,
+            'payment_status' => 'Pending',
+            'date_billed' => Carbon::now()->toDateString(),
         ]);
 
         return redirect()->route('service-requests.index')
@@ -161,21 +185,29 @@ class ServiceRequestController extends Controller
         $serviceRequest->update($validated);
 
         if ($validated['status'] === 'in_progress' && $serviceRequest->queue) {
-            $serviceRequest->queue->update(['status' => 'in_progress']);
+            $serviceRequest->queue->update([
+                'status' => 'in_progress',
+                'queue_status' => 'in_progress',
+            ]);
         } elseif ($validated['status'] === 'completed') {
             // Create billing if it doesn't exist
             if (!$serviceRequest->billing) {
                 Billing::create([
                     'service_id' => $serviceRequest->service_id,
+                    'employee_id' => $serviceRequest->employee_id,
                     'labor_fee' => 0,
                     'parts_fee' => 0,
                     'total_amount' => 0,
-                    'payment_status' => 'pending',
+                    'payment_status' => 'Pending',
+                    'date_billed' => Carbon::now()->toDateString(),
                 ]);
             }
             
             if ($serviceRequest->queue) {
-                $serviceRequest->queue->update(['status' => 'completed']);
+                $serviceRequest->queue->update([
+                    'status' => 'completed',
+                    'queue_status' => 'completed',
+                ]);
             }
 
             if ($request->filled('date_completed')) {
@@ -185,6 +217,13 @@ class ServiceRequestController extends Controller
             $this->updateBillingTotal($serviceRequest);
         }
 
+        // Keep billing employee reference in sync when assignment changes.
+        if ($serviceRequest->billing) {
+            $serviceRequest->billing->update([
+                'employee_id' => $serviceRequest->employee_id,
+            ]);
+        }
+
         return redirect()->route('service-requests.index')
             ->with('success', 'Service request updated successfully!');
     }
@@ -192,6 +231,10 @@ class ServiceRequestController extends Controller
     private function updateBillingTotal(ServiceRequest $serviceRequest)
     {
         $billing = $serviceRequest->billing;
+        if (!$billing) {
+            return;
+        }
+
         $partsTotal = $serviceRequest->purchases->sum('total_price');
         $laborFee = $billing->labor_fee ?: 50.00;
 
@@ -199,6 +242,8 @@ class ServiceRequestController extends Controller
             'labor_fee' => $laborFee,
             'parts_fee' => $partsTotal,
             'total_amount' => $laborFee + $partsTotal,
+            'employee_id' => $serviceRequest->employee_id,
+            'date_billed' => $billing->date_billed ?: Carbon::now()->toDateString(),
         ]);
     }
 

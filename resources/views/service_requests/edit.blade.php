@@ -19,15 +19,16 @@
                     @csrf
                     @method('PUT')
 
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user()->role === 'Admin')
                     <div class="mb-3">
                         <label for="employee_id" class="form-label text-main">Assign Employee</label>
                         <select class="form-select @error('employee_id') is-invalid @enderror" id="employee_id" name="employee_id">
                             <option value="">Unassigned</option>
                             @foreach($employees as $employee)
                             <option value="{{ $employee->employee_id }}"
+                                data-skills="{{ $employee->skills ?? 'No skills listed' }}"
                                 {{ old('employee_id', $serviceRequest->employee_id) == $employee->employee_id ? 'selected' : '' }}>
-                                {{ $employee->user->full_name }} - {{ $employee->department_name }}
+                                {{ $employee->user->full_name }} - ({{ $employee->skills ?? 'No skills listed' }})
                             </option>
                             @endforeach
                         </select>

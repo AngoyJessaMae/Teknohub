@@ -139,6 +139,39 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="problem_description" class="form-label text-main">Problem Description (Optional)</label>
+                        <textarea class="form-control @error('problem_description') is-invalid @enderror"
+                            id="problem_description" name="problem_description" rows="3"
+                            placeholder="Provide additional details about the problem...">{{ old('problem_description') }}</textarea>
+                        @error('problem_description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="appointment_request" class="form-label text-main">Requested Appointment Date (Optional)</label>
+                        <input type="datetime-local" class="form-control @error('appointment_request') is-invalid @enderror"
+                            id="appointment_request" name="appointment_request"
+                            value="{{ old('appointment_request') }}">
+                        @error('appointment_request')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="priority_level" class="form-label text-main">Priority Level (Optional)</label>
+                        <select class="form-select @error('priority_level') is-invalid @enderror" id="priority_level" name="priority_level">
+                            <option value="Normal" {{ old('priority_level', 'Normal') === 'Normal' ? 'selected' : '' }}>Normal</option>
+                            <option value="High" {{ old('priority_level') === 'High' ? 'selected' : '' }}>High</option>
+                            <option value="Urgent" {{ old('priority_level') === 'Urgent' ? 'selected' : '' }}>Urgent</option>
+                            <option value="Low" {{ old('priority_level') === 'Low' ? 'selected' : '' }}>Low</option>
+                        </select>
+                        @error('priority_level')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('service-requests.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Cancel
@@ -160,6 +193,15 @@
                 </h5>
             </div>
             <div class="card-body text-main">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Priority Level Guidelines</h6>
+                <ul class="text-main small">
+                    <li><strong>Normal:</strong> Standard service requests that are handled in the order they are received.</li>
+                    <li><strong>High:</strong> The issue significantly impacts your ability to work, but you have a temporary workaround.</li>
+                    <li><strong>Urgent:</strong> The issue completely prevents you from working and requires immediate attention.</li>
+                    <li><strong>Low:</strong> The issue is minor and does not have a significant impact on your workflow.</li>
+                </ul>
+                <hr>
+
                 <h6>Device Information</h6>
                 <p class="text-muted small">Please provide as much detail as possible about your device and the issues you're experiencing.</p>
 

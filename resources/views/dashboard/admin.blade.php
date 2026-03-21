@@ -8,8 +8,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-wrench fa-2x text-primary mb-2"></i>
-                <h3 class="card-title text-main">{{ $totalRequests }}</h3>
-                <p class="card-text text-muted">Total Requests</p>
+                <h3 class="card-title text-main">{{ $stats->totalRequests }}</h3>
+                <p class="card-text text-main">Total Requests</p>
             </div>
         </div>
     </div>
@@ -17,8 +17,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                <h3 class="card-title text-main">{{ $pendingRepairs }}</h3>
-                <p class="card-text text-muted">Pending Repairs</p>
+                <h3 class="card-title text-main">{{ $stats->pendingRepairs }}</h3>
+                <p class="card-text text-main">Pending Repairs</p>
             </div>
         </div>
     </div>
@@ -26,8 +26,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <h3 class="card-title text-main">{{ $completedRepairs }}</h3>
-                <p class="card-text text-muted">Completed Repairs</p>
+                <h3 class="card-title text-main">{{ $stats->completedRepairs }}</h3>
+                <p class="card-text text-main">Completed Repairs</p>
             </div>
         </div>
     </div>
@@ -36,7 +36,7 @@
             <div class="card-body">
                 <i class="fas fa-dollar-sign fa-2x text-info mb-2"></i>
                 <h3 class="card-title text-main">${{ number_format($totalRevenue, 2) }}</h3>
-                <p class="card-text text-muted">Total Revenue</p>
+                <p class="card-text text-main">Total Revenue</p>
             </div>
         </div>
     </div>
@@ -58,31 +58,31 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Customer</th>
-                                <th>Device</th>
-                                <th>Status</th>
-                                <th>Assigned To</th>
-                                <th>Date</th>
+                                <th class="text-main">ID</th>
+                                <th class="text-main">Customer</th>
+                                <th class="text-main">Device</th>
+                                <th class="text-main">Status</th>
+                                <th class="text-main">Assigned To</th>
+                                <th class="text-main">Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($recentRequests as $request)
                             <tr>
-                                <td>{{ $request->service_id }}</td>
-                                <td>{{ $request->customer->user->full_name }}</td>
-                                <td>{{ $request->device_type }}</td>
+                                <td class="text-main">{{ $request->service_id }}</td>
+                                <td class="text-main">{{ $request->customer->user->full_name }}</td>
+                                <td class="text-main">{{ $request->device_type }}</td>
                                 <td>
                                     <span class="badge bg-{{ $request->status === 'completed' ? 'success' : ($request->status === 'in_progress' ? 'warning' : 'secondary') }}">
                                         {{ ucfirst(str_replace('_', ' ', $request->status)) }}
                                     </span>
                                 </td>
-                                <td>{{ $request->employee ? $request->employee->user->full_name : 'Unassigned' }}</td>
-                                <td>{{ $request->created_at->format('M d, Y') }}</td>
+                                <td class="text-main">{{ $request->employee ? $request->employee->user->full_name : 'Unassigned' }}</td>
+                                <td class="text-main">{{ $request->created_at->format('M d, Y') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">No service requests found</td>
+                                <td colspan="6" class="text-center text-main">No service requests found</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -95,33 +95,33 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">
+                <h5 class="mb-0 text-main">
                     <i class="fas fa-users me-2"></i>System Statistics
                 </h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Total Users</span>
-                        <strong>{{ $totalUsers }}</strong>
+                        <span class="text-main">Total Users</span>
+                        <strong class="text-main">{{ $userStats->totalUsers }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Employees</span>
-                        <strong>{{ $totalEmployees }}</strong>
+                        <span class="text-main">Employees</span>
+                        <strong class="text-main">{{ $userStats->totalEmployees }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Customers</span>
-                        <strong>{{ $totalCustomers }}</strong>
+                        <span class="text-main">Customers</span>
+                        <strong class="text-main">{{ $userStats->totalCustomers }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Pending Approvals</span>
-                        <strong>{{ $pendingEmployeeApprovals }}</strong>
+                        <span class="text-main">Pending Approvals</span>
+                        <strong class="text-main">{{ $userStats->pendingEmployeeApprovals }}</strong>
                     </div>
                 </div>
             </div>
@@ -129,7 +129,7 @@
 
         <div class="card mt-3">
             <div class="card-header">
-                <h5 class="mb-0">
+                <h5 class="mb-0 text-main">
                     <i class="fas fa-link me-2"></i>Quick Links
                 </h5>
             </div>
@@ -143,6 +143,9 @@
                     </a>
                     <a href="{{ route('queue.index') }}" class="btn btn-outline-info">
                         <i class="fas fa-list me-2"></i>View Queue
+                    </a>
+                    <a href="{{ route('inventory.index') }}" class="btn btn-outline-success">
+                        <i class="fas fa-boxes me-2"></i>Manage Inventory
                     </a>
                     <a href="{{ route('employees.index') }}" class="btn btn-outline-dark">
                         <i class="fas fa-users-cog me-2"></i>Manage Employees

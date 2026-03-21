@@ -51,7 +51,7 @@
                                 <a href="{{ route('service-requests.show', $request) }}" class="btn btn-outline-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'employee' && $request->employee_id === auth()->user()->employee->employee_id))
+                                @if(auth()->user()->role === 'Admin')
                                 <a href="{{ route('service-requests.edit', $request) }}" class="btn btn-outline-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>

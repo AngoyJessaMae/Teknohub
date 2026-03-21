@@ -19,8 +19,8 @@
             --secondary-color: #7b4884;    /* Grape Soda */
             --bg-main: #fafaff;            /* Ghost White */
             --card-bg: #ffffff;            /* Clean white cards */
-            --text-main: #140f2d;          /* Midnight Violet */
-            --text-muted: #140f2d;         /* Midnight Violet */
+            --text-main: #1f2937;          /* Tailwind Gray-800 */
+            --text-muted: #6c757d;         /* Bootstrap Muted */
             --border-light: #e5e7eb;
             /* Overriding default Bootstrap colors */
             --bs-body-color: #140f2d;
@@ -118,14 +118,14 @@
         /* Forms */
         .form-control,
         .form-select {
-            background-color: #ffffff;
+            background-color: #f9fafb;           /* Tailwind Gray-50 */
             border: 1px solid var(--border-light);
             color: var(--text-main);
         }
 
         .form-control:focus,
         .form-select:focus {
-            background-color: #ffffff;
+            background-color: #f9fafb;           /* Tailwind Gray-50 */
             border-color: var(--primary-color);
             color: var(--text-main);
             box-shadow: 0 0 0 0.25rem rgba(236, 78, 32, 0.25);
@@ -169,26 +169,23 @@
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
 
-                        @if(auth()->user()->role !== 'employee')
-                        <a class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}" href="{{ route('service-requests.index') }}">
-                            <i class="fas fa-wrench me-2"></i>Service Requests
-                        </a>
-                        @endif
-
-                        @if(auth()->user()->role === 'admin')
-                        <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                            <i class="fas fa-boxes me-2"></i>Inventory
-                        </a>
-
-                        <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
-                            <i class="fas fa-file-invoice-dollar me-2"></i>Billing
-                        </a>
-                        @endif
-
-                        @if(auth()->user()->role === 'employee')
-                        <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">
-                            <i class="fas fa-list-ol me-2"></i>Service Queue
-                        </a>
+                        @if(auth()->user()->role === 'Admin')
+                            <a class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}" href="{{ route('service-requests.index') }}">
+                                <i class="fas fa-wrench me-2"></i>Service Requests
+                            </a>
+                            <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                            <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>Billing
+                            </a>
+                        @elseif(auth()->user()->role === 'Employee')
+                            <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                            <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">
+                                <i class="fas fa-list-ol me-2"></i>Service Queue
+                            </a>
                         @endif
 
                         <hr class="text-muted">
