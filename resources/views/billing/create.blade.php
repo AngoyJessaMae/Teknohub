@@ -26,23 +26,27 @@
                     @csrf
 
                     <!-- SR Info -->
-                    <div class="mb-4">
-                        <h6 class="text-main">Service Request Information</h6>
+
+<div class="mb-4 p-3 bg-white border rounded shadow-sm">
+                        <h6 class="text-main mb-3">Service Request Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <p class="mb-1"><strong>Customer:</strong> {{ $serviceRequest->customer->user->full_name }}</p>
-                                <p class="mb-1"><strong>Device:</strong> {{ $serviceRequest->device_type }}</p>
+                                <p class="mb-2 text-dark fs-6"><strong>Customer:</strong> <span class="text-primary">{{ $serviceRequest->customer->user->full_name ?? 'N/A' }}</span></p>
+                                <p class="mb-2 text-dark fs-6"><strong>Device:</strong> {{ $serviceRequest->device_type ?? 'N/A' }}</p>
                             </div>
                             <div class="col-md-6">
-                                <p class="mb-1"><strong>Status:</strong> 
-                                    <span class="badge bg-{{ $serviceRequest->status === 'completed' ? 'success' : ($serviceRequest->status === 'in_progress' ? 'warning' : 'secondary') }}">
-                                        {{ ucfirst($serviceRequest->status) }}
+
+<p class="mb-2 text-dark fs-6"><strong>Status:</strong> 
+                                    <span class="badge bg-{{ $serviceRequest->status === 'completed' ? 'success' : ($serviceRequest->status === 'in_progress' ? 'warning' : 'secondary') }} fs-6 px-3 py-2">
+                                        {{ ucfirst(str_replace('_', ' ', $serviceRequest->status ?? 'Pending')) }}
                                     </span>
                                 </p>
-                                <p class="mb-0"><strong>Employee:</strong> {{ $serviceRequest->employee->user->full_name ?? 'Not assigned' }}</p>
+
+                                <p class="mb-0 text-dark fs-6"><strong>Employee:</strong> <span class="text-primary">{{ $serviceRequest->employee->user->full_name ?? 'Not assigned' }}</span></p>
                             </div>
                         </div>
                     </div>
+
 
                     <hr>
 
@@ -97,10 +101,14 @@ value="{{ old('labor_fee', $suggestedLaborFee) }}" placeholder="Auto-filled from
                             </div>
                             @endif
                             <hr>
-                            <div class="d-flex justify-content-between">
-                                <span class="h5 mb-0">Total Amount:</span>
-                                <strong class="h5 mb-0 text-primary" id="total_amount_display">₱{{ number_format($totalAmount, 2) }}</strong>
+
+
+<div class="d-flex justify-content-between">
+                                <span class="h5 text-dark mb-0">Total Amount:</span>
+                                <strong class="h5 mb-0 text-primary fw-bold" id="total_amount_display">₱{{ number_format($totalAmount, 2) }}</strong>
                             </div>
+
+
                             <input type="hidden" id="total_amount" name="total_amount" value="{{ $totalAmount }}">
                         </div>
                     </div>
