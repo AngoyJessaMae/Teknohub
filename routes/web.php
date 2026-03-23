@@ -52,5 +52,7 @@ Route::middleware('auth')->group(function () {
         ->name('billing.update-payment-status');
 
     // Routes for employee management
-    Route::resource('employees', EmployeeController::class);
+    Route::resource('employees', EmployeeController::class)->only([
+        'index', 'create', 'store', 'edit', 'update', 'destroy'
+    ]);
 });

@@ -167,6 +167,12 @@
                             </a>
                         @endif
 
+                        @if(auth()->user()->role === 'Admin')
+                            <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" href="{{ route('employees.index') }}">
+                                <i class="fas fa-users-cog me-2"></i>Manage Employees
+                            </a>
+                        @endif
+
                         <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
                             <i class="fas fa-boxes me-2"></i>Inventory
                         </a>

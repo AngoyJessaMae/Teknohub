@@ -23,9 +23,31 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $email = trim(strtolower($credentials['email']));
+        $password = trim($credentials['password']);
+
+        // Primary login attempt using guard
+        if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'));
+        }
+
+        // Fallback: explicitly load user and verify hash/plain (handles any legacy un-hashed rows)
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+        if ($user && $user->account_status === 'Active') {
+            if (Hash::check($password, $user->password)) {
+                Auth::login($user);
+                $request->session()->regenerate();
+                return redirect()->intended(route('dashboard'));
+            }
+
+            // If the stored password looks unhashed and matches exactly, hash it on the fly then log in
+            if (strlen($user->password) < 60 && $user->password === $password) {
+                $user->update(['password' => Hash::make($password)]);
+                Auth::login($user);
+                $request->session()->regenerate();
+                return redirect()->intended(route('dashboard'));
+            }
         }
 
         return back()->withErrors([

@@ -135,9 +135,6 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('service-requests.create') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-plus me-2"></i>New Service Request
-                    </a>
                     <a href="{{ route('inventory.create') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-plus me-2"></i>Add Inventory Item
                     </a>

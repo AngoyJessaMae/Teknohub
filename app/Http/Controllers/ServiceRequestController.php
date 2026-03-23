@@ -61,7 +61,7 @@ class ServiceRequestController extends Controller
         ];
 
         $customerType = $request->input('customer_type');
-        if ($user->role === 'Employee') {
+        if ($user->role !== 'Customer') {
             if ($customerType === 'existing' || empty($customerType)) {
                 $rules['customer_id'] = 'required|exists:customers,customer_id';
             } elseif ($customerType === 'new') {
@@ -78,10 +78,11 @@ class ServiceRequestController extends Controller
 
         if ($user->role === 'Customer') {
             $customerId = $user->customer->customer_id;
-        } else { // Employee
+            $employeeId = $validated['staff_id'] ?? null;
+        } else { // Admin or Employee
             $customerType = $request->input('customer_type', 'existing');
             if ($customerType === 'existing') {
-                $customerId = $validated['customer_id'];
+                $customerId = $validated['customer_id'] ?? null;
             } else {
                 $newUser = User::create([
                     'full_name' => $validated['new_customer_name'],
@@ -96,7 +97,8 @@ class ServiceRequestController extends Controller
                 ]);
                 $customerId = $newCustomer->customer_id;
             }
-            $employeeId = $validated['staff_id'] ?? $user->employee->employee_id;
+            // If current user is an employee, default to them; if admin, use selected staff_id or null.
+            $employeeId = $validated['staff_id'] ?? ($user->employee->employee_id ?? null);
         }
 
         $serviceRequest = ServiceRequest::create([

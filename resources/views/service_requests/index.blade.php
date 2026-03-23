@@ -8,7 +8,7 @@
         <h2><i class="fas fa-wrench me-2"></i>Service Requests</h2>
     </div>
     <div class="col-md-6 text-end">
-        @if(auth()->user()->role !== 'employee')
+        @if(auth()->user()->role === 'Customer')
         <a href="{{ route('service-requests.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>New Request
         </a>

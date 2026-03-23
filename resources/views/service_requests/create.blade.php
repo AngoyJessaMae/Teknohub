@@ -27,7 +27,7 @@
                     @csrf
 
                     @auth
-                        @if(Auth::user()->role === 'Employee')
+                        @if(Auth::user()->role !== 'Customer')
                         <!-- select customer type -->
                         <div class="mb-4">
                             <label class="form-label text-main">Customer Type</label>
