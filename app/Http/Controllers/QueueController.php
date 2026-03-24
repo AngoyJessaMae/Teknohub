@@ -5,15 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\Queue;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class QueueController extends Controller
 {
     public function index()
     {
-        $queues = Queue::with(['serviceRequest.customer.user'])
+        $user = Auth::user();
+
+        $queueQuery = Queue::with(['serviceRequest.customer.user'])
             ->where('status', 'waiting')
-            ->orderBy('queue_position')
-            ->get();
+            ->orderBy('queue_position');
+
+        if ($user && $user->role === 'Employee') {
+            if (!$user->employee) {
+                $queues = collect();
+                return view('queue.index', compact('queues'));
+            }
+
+            $queueQuery->whereHas('serviceRequest', function ($query) use ($user) {
+                $query->where('employee_id', $user->employee->employee_id);
+            });
+        }
+
+        $queues = $queueQuery->get();
 
         return view('queue.index', compact('queues'));
     }
@@ -57,9 +72,23 @@ class QueueController extends Controller
 
     public function processNext()
     {
-        $nextInQueue = Queue::where('status', 'waiting')
-            ->orderBy('queue_position')
-            ->first();
+        $user = Auth::user();
+
+        $nextInQueueQuery = Queue::where('status', 'waiting')
+            ->orderBy('queue_position');
+
+        if ($user && $user->role === 'Employee') {
+            if (!$user->employee) {
+                return redirect()->route('queue.index')
+                    ->with('info', 'No employee profile found for this account.');
+            }
+
+            $nextInQueueQuery->whereHas('serviceRequest', function ($query) use ($user) {
+                $query->where('employee_id', $user->employee->employee_id);
+            });
+        }
+
+        $nextInQueue = $nextInQueueQuery->first();
 
         if (!$nextInQueue) {
             return redirect()->route('queue.index')

@@ -52,7 +52,7 @@
                         <i class="fas fa-eye me-1"></i>View
                     </a>
 
-                    @if(auth()->user()->role === 'employee')
+                    @if(auth()->user()->role === 'Employee')
                     <a href="{{ route('service-requests.edit', $queue->serviceRequest) }}" class="btn btn-outline-warning btn-sm">
                         <i class="fas fa-edit me-1"></i>Update
                     </a>

@@ -70,6 +70,7 @@
             border: 1px solid var(--border-light);
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(20, 15, 45, 0.05);
+            color: var(--text-main);
         }
 
         .card-header {
@@ -120,6 +121,21 @@
             border-color: var(--primary-color);
             color: var(--text-main);
             box-shadow: 0 0 0 0.25rem rgba(236, 78, 32, 0.25);
+        }
+
+        .card .form-label {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .card .text-muted {
+            color: #4b5563 !important;
+        }
+
+        .form-control::placeholder,
+        .form-select::placeholder {
+            color: #6b7280;
+            opacity: 1;
         }
 
         .navbar-brand {
