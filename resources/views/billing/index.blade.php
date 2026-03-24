@@ -75,7 +75,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted">No billing records found</td>
+                        <td colspan="11" class="text-center text-muted">No billing records found</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -89,7 +89,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-peso-sign fa-2x text-success mb-2" data-status-icon="paid"></i>
-                <h3 class="card-title text-main" data-status-total="paid">₱{{ number_format($billings->where('payment_status', 'paid')->sum('total_amount'), 2) }}</h3>
+                <h3 class="card-title text-main" data-status-total="paid">₱{{ number_format($billings->where('payment_status', 'Paid')->sum('total_amount'), 2) }}</h3>
                 <p class="card-text text-main" data-status-label="paid">Total Paid</p>
             </div>
         </div>
@@ -98,7 +98,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-warning mb-2" data-status-icon="pending"></i>
-                <h3 class="card-title text-main" data-status-total="pending">₱{{ number_format($billings->where('payment_status', 'pending')->sum('total_amount'), 2) }}</h3>
+                <h3 class="card-title text-main" data-status-total="pending">₱{{ number_format($billings->where('payment_status', 'Pending')->sum('total_amount'), 2) }}</h3>
                 <p class="card-text text-main" data-status-label="pending">Pending Payment</p>
             </div>
         </div>
@@ -107,7 +107,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-times-circle fa-2x text-danger mb-2" data-status-icon="unpaid"></i>
-                <h3 class="card-title text-main" data-status-total="unpaid">₱{{ number_format($billings->where('payment_status', 'unpaid')->sum('total_amount'), 2) }}</h3>
+                <h3 class="card-title text-main" data-status-total="unpaid">₱{{ number_format($billings->where('payment_status', 'Unpaid')->sum('total_amount'), 2) }}</h3>
                 <p class="card-text text-main" data-status-label="unpaid">Unpaid Amount</p>
             </div>
         </div>
@@ -130,37 +130,20 @@
         const table = document.getElementById('billingTable');
         const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
-        let visibleTotal = 0;
         for (let row of rows) {
             const show = status === 'all' || row.getAttribute('data-status') === status;
             row.style.display = show ? '' : 'none';
-            if (show) {
-                const totalText = row.cells[5].textContent.replace(/[^0-9.]/g, '');
-                visibleTotal += parseFloat(totalText) || 0;
-            }
         }
 
-        // Update active card for current status
-        const activeStatus = status === 'all' ? 'all' : status;
-        const totalEl = document.querySelector(`[data-status-total="${activeStatus}"]`);
-        const labelEl = document.querySelector(`[data-status-label="${activeStatus}"]`);
-        if (totalEl) {
-            totalEl.textContent = `₱${visibleTotal.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        }
-        if (labelEl) {
-            labelEl.textContent = activeStatus === 'all' ? 'Total Revenue' : 
-                                  activeStatus === 'paid' ? 'Total Paid' : 
-                                  activeStatus === 'pending' ? 'Pending Payment' : 'Unpaid Amount';
-        }
-
-        const buttons = document.querySelectorAll('[onclick^=\"filterByStatus\"]');
+        const buttons = document.querySelectorAll('[onclick^="filterByStatus"]');
         buttons.forEach(btn => btn.classList.remove('active'));
-        event?.target?.classList?.add('active');
+        event.target.classList.add('active');
     }
 
-    // Initialize totals on page load (default 'all')
+    // Initialize on load
     document.addEventListener('DOMContentLoaded', function() {
         filterByStatus('all', {target: document.querySelector('.btn.active')});
     });
 </script>
 @endpush
+

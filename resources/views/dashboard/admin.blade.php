@@ -35,7 +35,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-dollar-sign fa-2x text-info mb-2"></i>
-                <h3 class="card-title text-main">${{ number_format($totalRevenue, 2) }}</h3>
+                <h3 class="card-title text-main">₱{{ number_format($totalRevenue, 2) }}</h3>
                 <p class="card-text text-main">Total Revenue</p>
             </div>
         </div>

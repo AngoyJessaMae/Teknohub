@@ -106,12 +106,15 @@ class BillingController extends Controller
     public function updatePaymentStatus(Request $request, Billing $billing)
     {
         $validated = $request->validate([
-            'payment_status' => 'required|in:Paid,Unpaid,Pending',
+            'payment_status' => 'required|in:paid,unpaid,pending,Paid,Unpaid,Pending',
         ]);
+
+        // Normalize to title case
+        $validated['payment_status'] = ucfirst($validated['payment_status']);
 
         $billing->update($validated);
 
-        return redirect()->route('billing.index')
+        return redirect()->route('billing.show', $billing)
             ->with('success', 'Payment status updated successfully!');
     }
 
