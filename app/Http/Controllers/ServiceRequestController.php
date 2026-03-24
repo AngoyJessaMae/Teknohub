@@ -145,12 +145,18 @@ class ServiceRequestController extends Controller
             'status' => 'waiting',
         ]);
 
+        // Calculate initial billing totals including parts
+        $partsTotal = $serviceRequest->purchases()->sum('total_price');
+        $laborRate = \App\Models\LaborRate::where('service_type', $validated['service_type'])->first();
+        $laborFee = $laborRate ? $laborRate->standard_fee : 50.00;
+        $totalAmount = $laborFee + $partsTotal;
+
         Billing::create([
             'service_id' => $serviceRequest->service_id,
             'employee_id' => $employeeId,
-            'labor_fee' => 50,
-            'parts_fee' => 0,
-            'total_amount' => 50,
+            'labor_fee' => $laborFee,
+            'parts_fee' => $partsTotal,
+            'total_amount' => $totalAmount,
             'payment_status' => 'Pending',
             'date_billed' => Carbon::now()->toDateString(),
         ]);
@@ -226,8 +232,10 @@ class ServiceRequestController extends Controller
     {
         $billing = $serviceRequest->billing;
         if (!$billing) return;
+        $serviceRequest->fresh(); // Reload to get latest purchases
         $partsTotal = $serviceRequest->purchases->sum('total_price');
-        $laborFee = $billing->labor_fee ?: 50.00;
+        $laborRate = \App\Models\LaborRate::where('service_type', $serviceRequest->service_type)->first();
+        $laborFee = $laborRate ? $laborRate->standard_fee : 50.00;
         $billing->update([
             'labor_fee' => $laborFee,
             'parts_fee' => $partsTotal,

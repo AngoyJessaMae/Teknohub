@@ -173,9 +173,11 @@
                             </a>
                         @endif
 
+                        @if(auth()->user()->role !== 'Customer')
                         <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
                             <i class="fas fa-boxes me-2"></i>Inventory
                         </a>
+                        @endif
 
                         @if(auth()->user()->role === 'Employee')
                             <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">

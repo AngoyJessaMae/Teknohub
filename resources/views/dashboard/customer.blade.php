@@ -79,7 +79,7 @@
                                     </span>
                                 </td>
                                 <td>{{ $request->employee ? $request->employee->user->full_name : 'Unassigned' }}</td>
-                                <td>${{ number_format($request->billing->total_amount ?? 0, 2) }}</td>
+                                <td>₱{{ number_format($request->billing->total_amount ?? 0, 2) }}</td>
                                 <td>
                                     <a href="{{ route('service-requests.show', $request) }}" class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i>

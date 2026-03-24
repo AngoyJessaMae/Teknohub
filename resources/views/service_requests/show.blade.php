@@ -122,7 +122,7 @@
                 <p class="text-muted">No parts have been added to this service request yet.</p>
                 @endif
 
-                @if(auth()->user()->role === 'admin')
+@if(auth()->user()->role === 'admin' || auth()->user()->role === 'Employee')
                 <div class="mt-3">
                     <form method="POST" action="{{ route('inventory.add-to-service', $serviceRequest->service_id) }}" class="row g-2">
                         @csrf

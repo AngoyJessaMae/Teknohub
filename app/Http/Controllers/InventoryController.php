@@ -95,20 +95,21 @@ class InventoryController extends Controller
         $item->decrement('stock_quantity', $validated['quantity']);
 
         // Keep billing totals in sync whenever parts are added from inventory.
+        $partsTotal = Purchase::where('service_id', $serviceRequest->service_id)->sum('total_price');
+        $laborRate = \App\Models\LaborRate::where('service_type', $serviceRequest->service_type)->first();
+        $laborFee = $laborRate ? $laborRate->standard_fee : 50.00;
+
         $billing = Billing::firstOrCreate(
             ['service_id' => $serviceRequest->service_id],
             [
                 'employee_id' => $serviceRequest->employee_id,
-                'labor_fee' => 50,
+                'labor_fee' => $laborFee,
                 'parts_fee' => 0,
-                'total_amount' => 50,
+                'total_amount' => $laborFee,
                 'payment_status' => 'Pending',
                 'date_billed' => Carbon::now()->toDateString(),
             ]
         );
-
-        $partsTotal = Purchase::where('service_id', $serviceRequest->service_id)->sum('total_price');
-        $laborFee = $billing->labor_fee ?: 50;
 
         $billing->update([
             'employee_id' => $serviceRequest->employee_id,

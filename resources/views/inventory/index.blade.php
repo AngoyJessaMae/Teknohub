@@ -8,9 +8,11 @@
         <h2 class="text-main"><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
     </div>
     <div class="col-md-6 text-end">
+        @if(auth()->user()->role !== 'Customer')
         <a href="{{ route('inventory.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Add Item
         </a>
+        @endif
     </div>
 </div>
 
@@ -37,6 +39,7 @@
                     </div>
                 </div>
 
+                @if(auth()->user()->role !== 'Customer')
                 <div class="d-flex justify-content-between">
                     <a href="{{ route('inventory.edit', $item) }}" class="btn btn-outline-warning btn-sm">
                         <i class="fas fa-edit me-1"></i>Edit
@@ -49,6 +52,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
             <div class="card-footer bg-transparent">
                 <small class="text-main">Last updated: {{ $item->updated_at->diffForHumans() }}</small>
@@ -62,9 +66,11 @@
                 <i class="fas fa-box fa-3x text-muted mb-3"></i>
                 <h5 class="text-main">No inventory items found</h5>
                 <p class="text-main">Start by adding your first inventory item.</p>
+                @if(auth()->user()->role !== 'Customer')
                 <a href="{{ route('inventory.create') }}" class="btn btn-primary mt-3">
                     <i class="fas fa-plus me-2"></i>Add First Item
                 </a>
+                @endif
             </div>
         </div>
     </div>
