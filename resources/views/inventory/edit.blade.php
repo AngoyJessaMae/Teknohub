@@ -15,31 +15,25 @@
                 </a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('inventory.update', $item->item_id) }}">
+                <form method="POST" action="{{ route('inventory.update', $item) }}">
+
                     @csrf
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label for="name" class="form-label text-main">Item Name</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror"
-                            id="name" name="name" value="{{ old('name', $item->name) }}" required>
-                        @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label text-main">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror"
-                            id="description" name="description">{{ old('description', $item->description) }}</textarea>
-                        @error('description')
+                        <label for="item_name" class="form-label text-main">Item Name</label>
+                        <input type="text" class="form-control @error('item_name') is-invalid @enderror"
+                            id="item_name" name="item_name" value="{{ old('item_name', $item->item_name) }}" required>
+                        @error('item_name')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="price" class="form-label text-main">Price ($)</label>
+                            <label for="price" class="form-label text-main">Price (₱)</label>
                             <input type="number" step="0.01" min="0"
                                 class="form-control @error('price') is-invalid @enderror"
                                 id="price" name="price" value="{{ old('price', $item->price) }}" required>
@@ -48,14 +42,23 @@
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="quantity" class="form-label text-main">Stock Quantity</label>
-                            <input type="number" min="0"
-                                class="form-control @error('quantity') is-invalid @enderror"
-                                id="quantity" name="quantity" value="{{ old('quantity', $item->quantity) }}" required>
-                            @error('quantity')
+                            <label for="category" class="form-label text-main">Category</label>
+                            <input type="text" class="form-control @error('category') is-invalid @enderror"
+                                id="category" name="category" value="{{ old('category', $item->category) }}" required>
+                            @error('category')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_quantity" class="form-label text-main">Stock Quantity</label>
+                            <input type="number" min="0"
+                                class="form-control @error('stock_quantity') is-invalid @enderror"
+                                id="stock_quantity" name="stock_quantity" value="{{ old('stock_quantity', $item->stock_quantity) }}" required>
+                            @error('stock_quantity')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                     </div>
 
                     <div class="d-flex justify-content-between">
@@ -88,15 +91,17 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
                         <span class="text-main">Total Revenue:</span>
-                        <strong class="text-main">${{ number_format($item->purchases->sum('total_price'), 2) }}</strong>
+                        <strong class="text-main">₱{{ number_format($item->purchases->sum('total_price'), 2) }}</strong>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
+
                         <span class="text-main">Stock Status:</span>
-                        <strong class="{{ $item->quantity < 5 ? 'text-danger' : 'text-success' }}">
-                            {{ $item->quantity < 5 ? 'Low Stock' : 'In Stock' }}
+                        <strong class="{{ $item->stock_quantity < 5 ? 'text-danger' : 'text-success' }}">
+                            {{ $item->stock_quantity < 5 ? 'Low Stock' : 'In Stock' }}
                         </strong>
+
                     </div>
                 </div>
             </div>

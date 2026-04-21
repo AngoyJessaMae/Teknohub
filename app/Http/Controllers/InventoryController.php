@@ -40,12 +40,14 @@ class InventoryController extends Controller
 
     public function edit(Item $item)
     {
+        $item = Item::findOrFail(request()->route('inventory'));
         $item->load('purchases');
         return view('inventory.edit', compact('item'));
     }
 
     public function update(Request $request, Item $item)
     {
+        $item = Item::findOrFail(request()->route('inventory'));
         $validated = $request->validate([
             'item_name' => 'required|string|max:255',
             'category' => 'required|string|max:100',
@@ -61,6 +63,7 @@ class InventoryController extends Controller
 
     public function destroy(Item $item)
     {
+        $item = Item::findOrFail(request()->route('inventory'));
         $item->delete();
 
         return redirect()->route('inventory.index')
