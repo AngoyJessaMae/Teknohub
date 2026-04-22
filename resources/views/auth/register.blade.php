@@ -8,9 +8,9 @@
         <div class="card">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-tools me-2"></i>TeknoHub
-                    </h2>
+                        <h2 class="text-primary mb-1 d-flex justify-content-center align-items-center">
+                            <img src="{{ asset('images/th_logo.png') }}" class="img-fluid">
+                        </h2>
                     <p class="text-muted">Create Your Account</p>
                 </div>
 

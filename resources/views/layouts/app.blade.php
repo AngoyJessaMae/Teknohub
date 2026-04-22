@@ -164,8 +164,8 @@
             <div class="col-md-3 col-lg-2 px-0">
                 <div class="sidebar p-3">
                     <div class="text-center mb-4">
-                        <h4 class="navbar-brand mb-0">
-                            <i class="fas fa-tools me-2"></i>TeknoHub
+                        <h4 class="navbar-brand mb-0 d-flex align-items-center">
+                            <img src="{{ asset('images/th_logo.png') }}" class="img-fluid">
                         </h4>
                     </div>
 
@@ -222,7 +222,7 @@
             </div>
             @endauth
 
-            <div class="col-md-9 col-lg-10 px-4 py-3">
+            <div class="@auth col-md-9 col-lg-10 @else col-12 @endauth px-4 py-3">
                 <div class="main-content">
                     @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">

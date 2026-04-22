@@ -3,16 +3,18 @@
 @section('title', 'Login - TeknoHub')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-tools me-2"></i>TeknoHub
-                    </h2>
-                    <p class="text-main">Service Request & Repair Management</p>
-                </div>
+<div class="col-12 d-flex justify-content-center align-items-center vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="text-primary mb-1 d-flex justify-content-center align-items-center">
+                            <img src="{{ asset('images/th_logo.png') }}" class="img-fluid">
+                        </h2>
+                        <p class="text-main">Service Request & Repair Management</p>
+                    </div>
+
 
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
