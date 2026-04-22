@@ -12,14 +12,27 @@ class BillingController extends Controller
 {
     public function index()
     {
-        $billings = Billing::with(['serviceRequest.customer.user'])
-            ->latest()
-            ->get();
+        $user = Auth::user();
+
+        if ($user->role === 'Customer') {
+            $billings = Billing::whereHas('serviceRequest', function ($query) use ($user) {
+                $query->where('customer_id', $user->customer->customer_id);
+            })->with(['serviceRequest.customer.user', 'employee.user'])->latest()->get();
+        } elseif ($user->role === 'Employee') {
+            $billings = Billing::where('employee_id', $user->employee->employee_id)
+                ->with(['serviceRequest.customer.user', 'employee.user'])
+                ->latest()
+                ->get();
+        } else {
+            $billings = Billing::with(['serviceRequest.customer.user', 'employee.user'])
+                ->latest()
+                ->get();
+        }
 
         return view('billing.index', compact('billings'));
     }
 
-    
+
     public function create(ServiceRequest $serviceRequest)
     {
         // no billing for cancelled requests
@@ -27,9 +40,9 @@ class BillingController extends Controller
             return redirect()->route('service-requests.show', $serviceRequest)
                 ->with('error', 'Cannot create billing for cancelled service request.');
         }
-        
+
         $serviceRequest->load(['customer.user', 'employee.user', 'purchases.item', 'billing']);
-        
+
         $partsTotal = $serviceRequest->purchases->sum('total_price');
         $laborRate = \App\Models\LaborRate::where('service_type', $serviceRequest->service_type)->first();
         $suggestedLaborFee = $laborRate ? $laborRate->standard_fee : 50.00;
@@ -48,7 +61,7 @@ class BillingController extends Controller
             return redirect()->route('service-requests.show', $serviceRequest)
                 ->with('error', 'Cannot create billing for cancelled service request.');
         }
-        
+
         $validated = $request->validate([
             'labor_fee' => 'required|numeric|min:0',
             'parts_fee' => 'required|numeric|min:0',
@@ -122,7 +135,7 @@ class BillingController extends Controller
     public function deleteForCancelled(Billing $billing)
     {
         $serviceRequest = $billing->serviceRequest;
-        
+
         $billing->delete();
 
         return redirect()->route('service-requests.show', $serviceRequest)
@@ -133,7 +146,7 @@ class BillingController extends Controller
     public function destroy(Billing $billing)
     {
         $serviceRequest = $billing->serviceRequest;
-        
+
         $billing->delete();
 
         return redirect()->route('service-requests.show', $serviceRequest)

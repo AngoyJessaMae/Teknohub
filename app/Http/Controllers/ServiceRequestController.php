@@ -25,9 +25,10 @@ class ServiceRequestController extends Controller
                 ->latest()
                 ->get();
         } elseif ($user->role === 'Employee') {
-            $requests = ServiceRequest::with(['customer.user', 'billing', 'employee.user'])
-            ->latest()
-            ->get();
+            $requests = ServiceRequest::where('employee_id', $user->employee->employee_id)
+                ->with(['customer.user', 'billing'])
+                ->latest()
+                ->get();
         } else {
             $requests = ServiceRequest::with(['customer.user', 'employee.user', 'billing'])
                 ->latest()
@@ -42,20 +43,20 @@ class ServiceRequestController extends Controller
         $customers = Customer::with('user')->get();
         $staff = Employee::with('user')->get();
         $items = \App\Models\Item::where('stock_quantity', '>', 0)->get();
-        
+
         return view('service_requests.create', compact('customers', 'staff', 'items'));
     }
 
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+
         $rules = [
             'service_type' => 'required|in:diagnostic,hardware_repair,software_install,cleaning,upgrade,data_recovery',
             'device_type' => 'required|string',
             'device_description' => 'required|string',
-'appointment_request' => 'nullable|date',
-'priority_level' => 'nullable|string|max:50',
+            'appointment_request' => 'nullable|date',
+            'priority_level' => 'nullable|string|max:50',
             'parts' => 'nullable|json',
             'staff_id' => 'nullable|exists:employees,employee_id',
         ];
@@ -254,4 +255,3 @@ class ServiceRequestController extends Controller
             ->with('success', 'Service request deleted successfully!');
     }
 }
-
