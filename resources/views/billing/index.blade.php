@@ -61,11 +61,18 @@
                                 <a href="{{ route('billing.show', $billing) }}" class="btn btn-outline-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if(auth()->user()->role === 'admin')
+                                {{-- Simplified for debugging --}}
+                                @if(auth()->user()->role === 'customer')
+                                <a href="{{ route('billing.show', $billing) }}" class="btn btn-outline-success">
+                                    <i class="fas fa-money-bill-wave"></i> Pay
+                                </a>
+                                @endif
+                                @if(in_array(auth()->user()->role, ['admin', 'employee']))
                                 <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
                                     @csrf
+                                    @method('PUT')
                                     <input type="hidden" name="payment_status" value="{{ $billing->payment_status === 'paid' ? 'unpaid' : 'paid' }}">
-                                    <button type="submit" class="btn btn-outline-{{ $billing->payment_status === 'paid' ? 'warning' : 'success' }} btn-sm">
+                                    <button type="submit" class="btn btn-outline-{{ $billing->payment_status === 'paid' ? 'warning' : 'success' }} btn-sm" title="Mark as {{ $billing->payment_status === 'paid' ? 'Unpaid' : 'Paid' }}">
                                         <i class="fas fa-{{ $billing->payment_status === 'paid' ? 'undo' : 'check' }}"></i>
                                     </button>
                                 </form>
@@ -142,8 +149,9 @@
 
     // Initialize on load
     document.addEventListener('DOMContentLoaded', function() {
-        filterByStatus('all', {target: document.querySelector('.btn.active')});
+        filterByStatus('all', {
+            target: document.querySelector('.btn.active')
+        });
     });
 </script>
 @endpush
-

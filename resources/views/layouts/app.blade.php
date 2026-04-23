@@ -15,18 +15,18 @@
 
     <style>
         :root {
-            --primary-color: #EC4E20;      
-            --secondary-color: #7b4884;    
-            --bg-main: #fafaff;            
-            --card-bg: #ffffff;            
-            --text-main: #1f2937;          
-            --text-muted: #6c757d;         
+            --primary-color: #EC4E20;
+            --secondary-color: #7b4884;
+            --bg-main: #fafaff;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6c757d;
             --border-light: #e5e7eb;
             --bs-body-color: #140f2d;
             --bs-body-color-rgb: 20, 15, 45;
             --bs-primary: #EC4E20;
             --bs-primary-rgb: 236, 78, 32;
-            --bs-secondary: #D300F8;        
+            --bs-secondary: #D300F8;
             --bs-secondary-rgb: 211, 0, 248;
             --bs-card-cap-bg: #ffffff;
         }
@@ -174,31 +174,38 @@
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
 
-                        @if(auth()->user()->role === 'Admin' || auth()->user()->role === 'Employee')
-                            <a class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}" href="{{ route('service-requests.index') }}">
-                                <i class="fas fa-wrench me-2"></i>Service Requests
-                            </a>
-                            <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
-                                <i class="fas fa-file-invoice-dollar me-2"></i>Billing
-                            </a>
+                        {{-- Links for Customers --}}
+                        @if(auth()->user()->role === 'Customer')
+                        <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Billing
+                        </a>
                         @endif
 
-                        @if(auth()->user()->role === 'Admin')
-                            <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" href="{{ route('employees.index') }}">
-                                <i class="fas fa-users-cog me-2"></i>Manage Employees
-                            </a>
-                        @endif
-
-                        @if(auth()->user()->role !== 'Customer')
+                        {{-- Links for Admin and Employee --}}
+                        @if(in_array(auth()->user()->role, ['Admin', 'Employee']))
+                        <a class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}" href="{{ route('service-requests.index') }}">
+                            <i class="fas fa-wrench me-2"></i>Service Requests
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.index') }}">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Billing
+                        </a>
                         <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
                             <i class="fas fa-boxes me-2"></i>Inventory
                         </a>
                         @endif
 
+                        {{-- Links for Admin only --}}
+                        @if(auth()->user()->role === 'Admin')
+                        <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" href="{{ route('employees.index') }}">
+                            <i class="fas fa-users-cog me-2"></i>Manage Employees
+                        </a>
+                        @endif
+
+                        {{-- Links for Employee only --}}
                         @if(auth()->user()->role === 'Employee')
-                            <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">
-                                <i class="fas fa-list-ol me-2"></i>Service Queue
-                            </a>
+                        <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}">
+                            <i class="fas fa-list-ol me-2"></i>Service Queue
+                        </a>
                         @endif
 
                         <hr class="text-muted">
@@ -223,6 +230,29 @@
             @endauth
 
             <div class="@auth col-md-9 col-lg-10 @else col-12 @endauth px-4 py-3">
+                <div class="d-flex justify-content-end mb-3">
+                    @auth
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            @if(auth()->user()->unreadNotifications->count())
+                            <span class="badge bg-danger">{{ auth()->user()->unreadNotifications->count() }}</span>
+                            @endif
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+                            @forelse(auth()->user()->unreadNotifications as $notification)
+                            <li>
+                                <a class="dropdown-item" href="{{ $notification->link ? route('notifications.read', $notification->id) : '#' }}">
+                                    {{ $notification->message }}
+                                </a>
+                            </li>
+                            @empty
+                            <li><a class="dropdown-item" href="#">No new notifications</a></li>
+                            @endforelse
+                        </ul>
+                    </div>
+                    @endauth
+                </div>
                 <div class="main-content">
                     @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">

@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Billing;
 use App\Models\ServiceRequest;
 use App\Models\LaborRate;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class BillingController extends Controller
 {
@@ -123,9 +126,26 @@ class BillingController extends Controller
         ]);
 
         // Normalize to title case
-        $validated['payment_status'] = ucfirst($validated['payment_status']);
+        $validated['payment_status'] = ucfirst(strtolower($validated['payment_status']));
+
+        // If status is changing to 'Paid', also set the payment date if not already set
+        if ($validated['payment_status'] === 'Paid' && is_null($billing->payment_date)) {
+            $validated['payment_date'] = now();
+        }
 
         $billing->update($validated);
+
+        $message = "Your payment for service #{$billing->service_id} has been marked as {$billing->payment_status}.";
+        if ($billing->payment_status === 'Paid') {
+            $message = "Your payment for service #{$billing->service_id} has been confirmed. You can now view your official receipt.";
+        }
+
+        // Notify customer
+        Notification::create([
+            'user_id' => $billing->serviceRequest->customer->user_id,
+            'message' => $message,
+            'link' => route('billing.show', $billing),
+        ]);
 
         return redirect()->route('billing.show', $billing)
             ->with('success', 'Payment status updated successfully!');
@@ -151,5 +171,52 @@ class BillingController extends Controller
 
         return redirect()->route('service-requests.show', $serviceRequest)
             ->with('success', 'Billing deleted successfully!');
+    }
+
+    public function submitPayment(Request $request, Billing $billing)
+    {
+        $validated = $request->validate([
+            'payment_mode' => 'required|in:Cash,Credit Card,Debit Card,G-Cash,PayMaya,Bank Transfer',
+            'receipt' => [
+                Rule::requiredIf(fn($input) => $input['payment_mode'] !== 'Cash'),
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:2048'
+            ],
+        ]);
+
+        $updateData = [
+            'payment_mode' => $validated['payment_mode'],
+            'payment_status' => 'Pending',
+            'payment_date' => now(),
+        ];
+
+        if ($request->hasFile('receipt')) {
+            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+            $updateData['receipt_path'] = $receiptPath;
+        }
+
+        $billing->update($updateData);
+
+        // Notify admins
+        $admins = User::where('role', 'Admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'message' => "A new payment has been submitted for service #{$billing->service_id}.",
+                'link' => route('billing.show', $billing),
+            ]);
+        }
+
+        return response()->json(['success' => 'Payment submitted successfully! Please wait for verification.']);
+    }
+
+    public function showReceipt(Billing $billing)
+    {
+        // Ensure that only the customer or an admin/employee can view the receipt
+        $this->authorize('view', $billing);
+
+        return view('billing.receipt', compact('billing'));
     }
 }
