@@ -17,11 +17,13 @@ class BillingController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'Customer') {
+        $role = strtolower($user->role);
+
+        if ($role === 'customer') {
             $billings = Billing::whereHas('serviceRequest', function ($query) use ($user) {
                 $query->where('customer_id', $user->customer->customer_id);
             })->with(['serviceRequest.customer.user', 'employee.user'])->latest()->get();
-        } elseif ($user->role === 'Employee') {
+        } elseif ($role === 'employee') {
             $billings = Billing::where('employee_id', $user->employee->employee_id)
                 ->with(['serviceRequest.customer.user', 'employee.user'])
                 ->latest()
@@ -133,6 +135,10 @@ class BillingController extends Controller
             $validated['payment_date'] = now();
         }
 
+        if ($validated['payment_status'] !== 'Paid') {
+            $validated['payment_date'] = null;
+        }
+
         $billing->update($validated);
 
         $message = "Your payment for service #{$billing->service_id} has been marked as {$billing->payment_status}.";
@@ -178,7 +184,7 @@ class BillingController extends Controller
         $validated = $request->validate([
             'payment_mode' => 'required|in:Cash,Credit Card,Debit Card,G-Cash,PayMaya,Bank Transfer',
             'receipt' => [
-                Rule::requiredIf(fn($input) => $input['payment_mode'] !== 'Cash'),
+                Rule::requiredIf(fn() => $request->input('payment_mode') !== 'Cash'),
                 'nullable',
                 'file',
                 'mimes:jpg,jpeg,png,pdf',
@@ -200,16 +206,20 @@ class BillingController extends Controller
         $billing->update($updateData);
 
         // Notify admins
-        $admins = User::where('role', 'Admin')->get();
+        $admins = User::whereRaw('LOWER(role) = ?', ['admin'])->get();
         foreach ($admins as $admin) {
             Notification::create([
-                'user_id' => $admin->id,
+                'user_id' => $admin->user_id,
                 'message' => "A new payment has been submitted for service #{$billing->service_id}.",
                 'link' => route('billing.show', $billing),
             ]);
         }
 
-        return response()->json(['success' => 'Payment submitted successfully! Please wait for verification.']);
+        if ($request->expectsJson()) {
+            return response()->json(['success' => 'Payment submitted successfully! Please wait for verification.']);
+        }
+
+        return redirect()->back()->with('success', 'Payment submitted successfully! Please wait for verification.');
     }
 
     public function showReceipt(Billing $billing)

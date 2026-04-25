@@ -84,18 +84,18 @@
                                     <a href="{{ route('service-requests.show', $request) }}" class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if($request->billing && $request->billing->exists && $request->billing->payment_status !== 'paid')
-                                    <div class="dropdown d-inline">
+                                    @if($request->billing && $request->billing->exists && strtolower($request->billing->payment_status) !== 'paid')
+                                    <div class="dropdown d-inline" data-billing-id="{{ $request->billing->billing_id }}">
                                         <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-money-bill-wave"></i> Pay
                                         </button>
                                         <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="Cash">Cash</a></li>
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="G-Cash">G-Cash</a></li>
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="PayMaya">PayMaya</a></li>
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="Bank Transfer">Bank Transfer</a></li>
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="Credit Card">Credit Card</a></li>
-                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->id }}" data-payment-mode="Debit Card">Debit Card</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="Cash">Cash</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="G-Cash">G-Cash</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="PayMaya">PayMaya</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="Bank Transfer">Bank Transfer</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="Credit Card">Credit Card</a></li>
+                                            <li><a class="dropdown-item pay-option" href="#" data-billing-id="{{ $request->billing->billing_id }}" data-payment-mode="Debit Card">Debit Card</a></li>
                                         </ul>
                                     </div>
                                     @endif
@@ -125,6 +125,9 @@
                     <h5 class="modal-title" id="paymentModalLabel">Submit Payment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                @php
+                $paymentChannels = config('payment.channels');
+                @endphp
                 <form id="paymentForm" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('POST')
@@ -134,6 +137,12 @@
                         <div class="mb-3">
                             <label for="modal_payment_mode" class="form-label">Payment Method</label>
                             <input type="text" class="form-control" id="modal_payment_mode" name="payment_mode" readonly>
+                        </div>
+                        <div class="mb-3" id="modal-payment-instructions">
+                            <div class="alert alert-info mb-0" role="alert">
+                                <strong id="modal-payment-instructions-title">Payment Instructions</strong>
+                                <div id="modal-payment-instructions-text" class="small"></div>
+                            </div>
                         </div>
                         <div class="mb-3" id="modal-receipt-section">
                             <label for="modal_receipt" class="form-label">Upload Proof of Payment</label>
@@ -169,49 +178,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-        const paymentForm = document.getElementById('paymentForm');
-        const modalBillingId = document.getElementById('modal_billing_id');
-        const modalPaymentMode = document.getElementById('modal_payment_mode');
-        const modalReceiptSection = document.getElementById('modal-receipt-section');
-        const modalReceiptInput = document.getElementById('modal_receipt');
-
-        document.querySelectorAll('.pay-option').forEach(item => {
-            item.addEventListener('click', function(event) {
-                event.preventDefault();
-
-                const dropdownDiv = this.closest('.dropdown');
-                const billingId = dropdownDiv ? dropdownDiv.getAttribute('data-billing-id') : null;
-                const paymentMode = this.getAttribute('data-payment-mode');
-
-                // Set the form action dynamically
-                // Note: Make sure your route for submitting payment can handle this URL structure.
-                paymentForm.action = `/billing/${billingId}/submit-payment`;
-
-                // Populate the modal fields
-                modalBillingId.value = billingId;
-                modalPaymentMode.value = paymentMode;
-
-                // Show/hide receipt upload based on payment mode
-                if (paymentMode === 'Cash') {
-                    modalReceiptSection.style.display = 'none';
-                    modalReceiptInput.required = false;
-                } else {
-                    modalReceiptSection.style.display = 'block';
-                    modalReceiptInput.required = true;
-                }
-
-                // Show the modal
-                paymentModal.show();
-            });
-        });
-    });
-</script>
-@endpush
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
         const paymentModalEl = document.getElementById('paymentModal');
         const paymentModal = new bootstrap.Modal(paymentModalEl);
         const paymentForm = document.getElementById('paymentForm');
@@ -220,6 +186,9 @@
         const modalReceiptSection = document.getElementById('modal-receipt-section');
         const modalReceiptInput = document.getElementById('modal_receipt');
         const paymentError = document.getElementById('payment-error');
+        const instructionsTitle = document.getElementById('modal-payment-instructions-title');
+        const instructionsText = document.getElementById('modal-payment-instructions-text');
+        const paymentChannels = @json($paymentChannels ?? []);
 
         document.querySelectorAll('.pay-option').forEach(item => {
             item.addEventListener('click', function(event) {
@@ -229,7 +198,7 @@
                 paymentError.style.display = 'none';
 
                 const dropdownDiv = this.closest('.dropdown');
-                const billingId = dropdownDiv ? dropdownDiv.getAttribute('data-billing-id') : null;
+                const billingId = this.getAttribute('data-billing-id') || (dropdownDiv ? dropdownDiv.getAttribute('data-billing-id') : null);
                 const paymentMode = this.getAttribute('data-payment-mode');
 
                 if (!billingId) {
@@ -253,20 +222,14 @@
                     modalReceiptInput.required = true;
                 }
 
+                const channel = paymentChannels[paymentMode];
+                if (channel) {
+                    instructionsTitle.textContent = channel.label || 'Payment Instructions';
+                    instructionsText.textContent = channel.details || '';
+                }
+
                 paymentModal.show();
             });
-        });
-
-        paymentForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent actual form submission
-
-            // For presentation purposes, immediately hide the form and show the success message
-            document.getElementById('payment-form-container').style.display = 'none';
-            const successContainer = document.getElementById('success-message-container');
-            const successText = document.getElementById('success-text');
-
-            successText.textContent = 'Payment submitted successfully!';
-            successContainer.style.display = 'block';
         });
 
         paymentModalEl.addEventListener('hidden.bs.modal', function() {

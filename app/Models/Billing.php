@@ -20,6 +20,7 @@ class Billing extends Model
         'date_billed',
         'payment_mode',
         'payment_date',
+        'receipt_path',
     ];
 
     protected $casts = [

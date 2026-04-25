@@ -62,20 +62,50 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 {{-- Simplified for debugging --}}
-                                @if(auth()->user()->role === 'customer')
-                                <a href="{{ route('billing.show', $billing) }}" class="btn btn-outline-success">
-                                    <i class="fas fa-money-bill-wave"></i> Pay
-                                </a>
+                                @if(strtolower(auth()->user()->role) === 'customer')
+                                    @if(strtolower($billing->payment_status) === 'paid')
+                                    <span class="btn btn-outline-success disabled">
+                                        <i class="fas fa-check-circle"></i> Paid
+                                    </span>
+                                    @else
+                                    <a href="{{ route('billing.show', $billing) }}" class="btn btn-outline-success">
+                                        <i class="fas fa-money-bill-wave"></i> Pay
+                                    </a>
+                                    @endif
                                 @endif
-                                @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                                <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="payment_status" value="{{ $billing->payment_status === 'paid' ? 'unpaid' : 'paid' }}">
-                                    <button type="submit" class="btn btn-outline-{{ $billing->payment_status === 'paid' ? 'warning' : 'success' }} btn-sm" title="Mark as {{ $billing->payment_status === 'paid' ? 'Unpaid' : 'Paid' }}">
-                                        <i class="fas fa-{{ $billing->payment_status === 'paid' ? 'undo' : 'check' }}"></i>
-                                    </button>
-                                </form>
+                                @if(in_array(strtolower(auth()->user()->role), ['admin', 'employee']))
+                                    @if($billing->receipt_path)
+                                    <a href="{{ asset('storage/' . $billing->receipt_path) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary" title="View Proof">
+                                        <i class="fas fa-receipt"></i>
+                                    </a>
+                                    @endif
+                                    @if(strtolower($billing->payment_status) === 'pending')
+                                    <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="payment_status" value="Paid">
+                                        <button type="submit" class="btn btn-outline-success btn-sm" title="Confirm Payment">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="payment_status" value="Unpaid">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Reject Payment">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                    @elseif(strtolower($billing->payment_status) !== 'paid')
+                                    <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="payment_status" value="Paid">
+                                        <button type="submit" class="btn btn-outline-success btn-sm" title="Mark as Paid">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    @endif
                                 @endif
                             </div>
                         </td>

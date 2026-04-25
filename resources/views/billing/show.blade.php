@@ -3,6 +3,9 @@
 @section('title', 'Billing Details - TeknoHub')
 
 @section('content')
+@php
+$paymentChannels = config('payment.channels');
+@endphp
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -47,17 +50,35 @@
                                 {{ ucfirst($billing->payment_status) }}
                             </span>
                         </div>
-                        <!-- DEBUG: User Role is [{{ auth()->user()->role ?? 'NOT LOGGED IN' }}] -->
                         <div class="mt-3 text-center">
-                            @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                            <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="payment_status" value="{{ $billing->payment_status === 'paid' ? 'unpaid' : 'paid' }}">
-                                <button type="submit" class="btn btn-{{ $billing->payment_status === 'paid' ? 'warning' : 'success' }} btn-sm">
-                                    Mark as {{ $billing->payment_status === 'paid' ? 'Unpaid' : 'Paid' }}
-                                </button>
-                            </form>
+                            @if(in_array(strtolower(auth()->user()->role), ['admin', 'employee']))
+                                @if(strtolower($billing->payment_status) === 'pending')
+                                <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="payment_status" value="Paid">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Confirm Payment
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="payment_status" value="Unpaid">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Reject Payment
+                                    </button>
+                                </form>
+                                @elseif(strtolower($billing->payment_status) !== 'paid')
+                                <form method="POST" action="{{ route('billing.update-payment-status', $billing) }}" class="d-inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="payment_status" value="Paid">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Mark as Paid
+                                    </button>
+                                </form>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -110,11 +131,39 @@
                 <p><strong>Date Billed:</strong> {{ $billing->date_billed ? \Carbon\Carbon::parse($billing->date_billed)->format('M d, Y') : 'N/A' }}</p>
                 <p><strong>Date Created:</strong> {{ $billing->created_at->format('M d, Y') }}</p>
                 <p><strong>Last Updated:</strong> {{ $billing->updated_at->format('M d, Y') }}</p>
-                <p>DEBUG: Payment Status is [{{ $billing->payment_status }}]</p>
+                @if(in_array(strtolower(auth()->user()->role), ['admin', 'employee']))
+                    @if($billing->receipt_path)
+                    @php
+                    $receiptDisk = Storage::disk('public');
+                    $receiptPath = str_replace('\\', '/', $billing->receipt_path);
+                    $receiptExists = $receiptDisk->exists($receiptPath);
+                    $receiptUrl = url('storage/' . $receiptPath);
+                    $receiptIsPdf = strtolower(pathinfo($receiptPath, PATHINFO_EXTENSION)) === 'pdf';
+                    @endphp
+                    <div class="mt-3">
+                        <strong>Payment Proof ({{ $receiptIsPdf ? 'PDF' : 'Image' }}):</strong>
+                        <div class="mt-2">
+                            @if(!$receiptExists)
+                            <div class="text-muted small">Proof file is missing or not publicly accessible.</div>
+                            @elseif($receiptIsPdf)
+                            <a href="{{ $receiptUrl }}" target="_blank" rel="noopener">View PDF Receipt</a>
+                            @else
+                            <a href="{{ $receiptUrl }}" target="_blank" rel="noopener">
+                                <img src="{{ $receiptUrl }}" alt="Payment proof" class="img-fluid rounded border" style="max-height: 240px; object-fit: contain;">
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    @else
+                    <div class="mt-3 text-muted small">
+                        Payment proof has not been uploaded yet.
+                    </div>
+                    @endif
+                @endif
             </div>
         </div>
 
-        @if(auth()->user()->role === 'customer' && strtolower($billing->payment_status) !== 'paid')
+        @if(strtolower(auth()->user()->role) === 'customer' && strtolower($billing->payment_status) !== 'paid')
         <div class="card mt-4">
             <div class="card-header text-main">
                 <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Submit Payment</h5>
@@ -133,6 +182,12 @@
                             <option value="{{ $option }}" {{ $selectedPaymentMode === $option ? 'selected' : '' }}>{{ $option }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="mb-3" id="payment-instructions">
+                        <div class="alert alert-info mb-0" role="alert">
+                            <strong id="payment-instructions-title">Payment Instructions</strong>
+                            <div id="payment-instructions-text" class="small"></div>
+                        </div>
                     </div>
                     <div class="mb-3" id="receipt-upload-section">
                         <label for="receipt" class="form-label">Upload Receipt</label>
@@ -153,14 +208,27 @@
         const paymentModeSelect = document.getElementById('payment_mode');
         const receiptUploadSection = document.getElementById('receipt-upload-section');
         const receiptInput = document.getElementById('receipt');
+        const instructionsTitle = document.getElementById('payment-instructions-title');
+        const instructionsText = document.getElementById('payment-instructions-text');
+        const paymentChannels = @json($paymentChannels ?? []);
+
+        if (!paymentModeSelect || !receiptUploadSection || !receiptInput) {
+            return;
+        }
 
         function toggleReceiptSection() {
             if (paymentModeSelect.value === 'Cash') {
                 receiptUploadSection.style.display = 'none';
                 receiptInput.required = false;
             } else {
-                receiptUploadahan.style.display = 'block';
+                receiptUploadSection.style.display = 'block';
                 receiptInput.required = true;
+            }
+
+            const channel = paymentChannels[paymentModeSelect.value];
+            if (channel) {
+                instructionsTitle.textContent = channel.label || 'Payment Instructions';
+                instructionsText.textContent = channel.details || '';
             }
         }
 
